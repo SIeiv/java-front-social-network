@@ -21,7 +21,8 @@ const Main = () => {
                     <Routes>
                         <Route path="/my-page" element={<UserPage type={"my"}/>}/>
                         <Route path="/user/*" element={<UserPage type={"another"}/>}/>
-                        <Route path="/feed" element={<Feed />}/>
+                        <Route path="/feed/main" element={<Feed type={"main"}/>}/>
+                        <Route path="/feed/recommended" element={<Feed type={"recommended"}/>}/>
                     </Routes>
                 </div>
             </div>

@@ -44,7 +44,9 @@ export interface IShortUser {
     "lastName": string,
 }
 
-export interface ILkNavDataType {
-    text: string;
-    to: string;
+export type IFeed = IPost[];
+
+export type IRecommended = {
+    profiles: IShortUser[],
+    posts: IPost[]
 }

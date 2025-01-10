@@ -4,12 +4,14 @@ import newAuthReducer from "./auth/new_auth.slice.ts"
 
 import logger from "redux-logger";
 import profileReducer from "./profile/profile.slice.ts";
+import feedReducer from "./feed/feed.slice.ts";
 
 export const store = configureStore({
     reducer: {
         auth: authReducer,
         newAuth: newAuthReducer,
-        profile: profileReducer
+        profile: profileReducer,
+        feed: feedReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(...(process.env.NODE_ENV === "production" ? [logger] : [])),
