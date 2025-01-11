@@ -17,7 +17,7 @@ const InitializeApp = () => {
 
     return (
         <div className={"w-full h-full"}>
-            {appInitializeData.initialized ? <App /> : <Loading dependence={!appInitializeData.initialized} />}
+            {!appInitializeData.isLoading ? <App /> : <Loading dependence={appInitializeData.isLoading} />}
         </div>
     );
 };

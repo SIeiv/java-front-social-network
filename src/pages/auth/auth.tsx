@@ -7,11 +7,11 @@ import {useAppSelector} from "@/hooks.ts";
 const Auth = () => {
     const navigate = useNavigate();
 
-    const profile = useAppSelector(state => state.auth.profileData.profile);
+    const profile = useAppSelector(state => state.auth.appInitializeData.initialUserData);
 
     useEffect(() => {
         if (profile) {
-            navigate("/");
+            navigate("/my-page");
         }
     }, [])
 

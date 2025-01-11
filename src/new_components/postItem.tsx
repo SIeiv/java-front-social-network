@@ -14,9 +14,10 @@ import {
 import {Input} from "@/components/ui/input.tsx";
 import ShortNameLink from "@/new_components/shortNameLink.tsx";
 import DateLabel from "@/new_components/DateLabel.tsx";
-import {useAppDispatch} from "@/hooks.ts";
+import {useAppDispatch, useAppSelector} from "@/hooks.ts";
 import {createPostCommentAC} from "@/store/profile/actionCreators.ts";
 import {ICreatePostCommentRequest} from "@/api/posts/types.ts";
+import {IDetailsResponse} from "@/api/auth/types.ts";
 
 interface IPostItem {
     postData: IPost
@@ -24,10 +25,14 @@ interface IPostItem {
     lastName: string | null
     shortName: string | null
     type?: "my" | "another"
+    place: string
 }
 
-const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type}) => {
+const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type, place}) => {
     const dispatch = useAppDispatch();
+
+    const currentUser: IDetailsResponse = useAppSelector(state => state.auth.appInitializeData.initialUserData)
+    const myThumbnail = useAppSelector(state => state.profile.myThumbnail);
 
     const comments: ReactElement[] = postData.comments.map((comment: IComment) =>
         <CommentItem key={comment.id} commentData={comment}/>
@@ -40,11 +45,13 @@ const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type
     const handleCommentCreate = () => {
         const data1: IComment = {
             id: 0,
-            username: "this",
+            username: currentUser.shortname,
             content: commentContent,
-            image: "",
+            image: myThumbnail ? myThumbnail : "",
             authorId: 0,
-            creationDate: new Date().toISOString()
+            creationDate: new Date().toISOString(),
+            firstName: currentUser.firstname,
+            lastName: currentUser.lastname,
         }
 
         const data2: ICreatePostCommentRequest = {
@@ -52,7 +59,7 @@ const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type
             content: commentContent
         }
 
-        dispatch(createPostCommentAC(data1, data2));
+        dispatch(createPostCommentAC(data1, data2, place));
         setCommentContent("");
     }
 

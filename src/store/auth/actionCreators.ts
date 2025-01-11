@@ -1,6 +1,8 @@
 import {ILoginRequest, IRegisterRequest} from "@/api/auth/types.ts";
 import {Dispatch} from "@reduxjs/toolkit";
 import {
+    appInitializeFail,
+    appInitializeStart,
     appInitializeSuccess,
     loginFail,
     loginStart,
@@ -10,6 +12,7 @@ import {
 import api from "../../api";
 import {store} from "@/store";
 import {setUserDetails} from "@/store/auth/new_auth.slice.ts";
+import {resetAll} from "@/store/commonAC.ts";
 
 export const getDetailsAC = () => async (dispatch: Dispatch) => {
     try {
@@ -57,9 +60,14 @@ export const appInitializeAC =
     () => async (dispatch: Dispatch) => {
         try {
             console.log("appInitializeAC");
-            dispatch(appInitializeSuccess());
+            dispatch(appInitializeStart());
+
+            const response = await api.auth.getDetails();
+
+            dispatch(appInitializeSuccess(response.data));
         } catch (e: any) {
             console.error(e);
+            dispatch(appInitializeFail(e.response ? e.response.data : e.message));
         }
     }
 

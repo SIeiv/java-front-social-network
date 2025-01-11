@@ -23,6 +23,7 @@ import {Textarea} from "@/components/ui/textarea.tsx";
 import {ICreatePostRequest} from "@/api/posts/types.ts";
 import {useLocation} from "react-router";
 import {clearAnotherUser} from "@/store/profile/profile.slice.ts";
+import ShortNameLink from "@/new_components/shortNameLink.tsx";
 
 interface IUserPageProps {
     type: "my" | "another"
@@ -86,7 +87,7 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
 
     const posts: ReactElement[] = myPageData.userPosts.map((post: IPost) =>
         <PostItem type={type} firstName={myPageData.firstName} lastName={myPageData.lastName}
-                  shortName={myPageData.shortName} postData={post}/>
+                  shortName={myPageData.shortName} postData={post} place={type === "my" ? "myPage" : "anotherPage"}/>
     );
 
     const subscribers: ReactElement[] = mySubscribers.map((subscriber: IShortUser) =>
@@ -253,7 +254,7 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                             && myPageData.firstName[0] + myPageData.lastName[0]}</AvatarFallback>
                     </Avatar>
                     <div className={"flex flex-col justify-center items-start h-full gap-2"}>
-                        <Label>{myPageData.firstName + " " + myPageData.lastName}</Label>
+                        <Label className={"text-base"}>{myPageData.firstName + " " + myPageData.lastName}</Label>
                         {/*<Label>{"@" + myPageData.shortName}</Label>*/}
                         <Label onClick={() => {
                             setProfileDetailsState(true)
@@ -295,20 +296,26 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                 <div className={"flex flex-col gap-3"}>
                     <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
                         <div className={"flex flex-col gap-3"}>
-                            <Label>{"Подписчики " + myPageData.subscribersCount}</Label>
+                            <ShortNameLink content={"Подписчики " + myPageData.subscribersCount} to={
+                                type === "my" ? "/my-friends/subscribers" : `/friends/subscribers/${myPageData.shortName}`
+                            }/>
                             <div className={"flex justify-start items-start gap-1"}>
                                 {subscribers}
                             </div>
                         </div>
                         <div className={"flex flex-col gap-3"}>
-                            <Label>{"Друзья " + myPageData.friendsCount}</Label>
+                            <ShortNameLink content={"Друзья " + myPageData.friendsCount} to={
+                                type === "my" ? "/my-friends/friends" : `/friends/friends/${myPageData.shortName}`
+                            }/>
                             <div className={"flex justify-start items-start gap-1"}>
                                 {friends}
                             </div>
                         </div>
                     </div>
                     <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
-                        <Label>{"Подписки " + myPageData.subscriptionsCount}</Label>
+                        <ShortNameLink content={"Подписки " + myPageData.subscriptionsCount} to={
+                            type === "my" ? "/my-friends/subscriptions" : `/friends/subscriptions/${myPageData.shortName}`
+                        }/>
                         <div className={"flex justify-start items-start gap-1"}>
                             {subscriptions}
                         </div>

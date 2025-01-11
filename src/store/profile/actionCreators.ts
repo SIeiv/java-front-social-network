@@ -15,10 +15,11 @@ import {
     setMyFriends,
     setMyPageData,
     setMySubscribers,
-    setMySubscriptions
+    setMySubscriptions, setMyThumbnail
 } from "@/store/profile/profile.slice.ts";
 import {ICreatePostCommentRequest, ICreatePostRequest} from "@/api/posts/types.ts";
 import {IComment, IPost} from "@/types.ts";
+import {local_createFeedPostComment} from "@/store/feed/feed.slice.ts";
 
 
 export const fillProfileAC = (data: IFillProfileRequest) => async (dispatch: Dispatch) => {
@@ -57,6 +58,69 @@ export const getMyPageAC = () => async (dispatch: Dispatch) => {
 
         const subscriptionsResponse = await api.profile.getUserSubscriptions(response.data.shortName!);
         dispatch(setMySubscriptions(subscriptionsResponse.data));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getMyFriendsAC = (username: string) => async (dispatch: Dispatch) => {
+    try {
+        const friendsResponse = await api.profile.getUserFriends(username);
+        dispatch(setMyFriends(friendsResponse.data));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getMySubscribersAC = (username: string) => async (dispatch: Dispatch) => {
+    try {
+        const friendsResponse = await api.profile.getUserSubscribers(username);
+        dispatch(setMySubscribers(friendsResponse.data));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getMySubscriptionsAC = (username: string) => async (dispatch: Dispatch) => {
+    try {
+        const friendsResponse = await api.profile.getUserSubscriptions(username);
+        dispatch(setMySubscriptions(friendsResponse.data));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getMyThumbnailAC = () => async (dispatch: Dispatch) => {
+    try {
+        const response = await api.profile.getMyThumbnail();
+        dispatch(setMyThumbnail(response.data));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getAnotherFriendsAC = (username: string) => async (dispatch: Dispatch) => {
+    try {
+        const friendsResponse = await api.profile.getUserFriends(username);
+        dispatch(setAnotherFriends(friendsResponse.data));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getAnotherSubscribersAC = (username: string) => async (dispatch: Dispatch) => {
+    try {
+        const friendsResponse = await api.profile.getUserSubscribers(username);
+        dispatch(setAnotherSubscribers(friendsResponse.data));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getAnotherSubscriptionsAC = (username: string) => async (dispatch: Dispatch) => {
+    try {
+        const friendsResponse = await api.profile.getUserSubscriptions(username);
+        dispatch(setAnotherSubscriptions(friendsResponse.data));
     } catch (error: any) {
         console.error(error);
     }
@@ -103,10 +167,11 @@ export const likePostAC = (postId: number) => async (dispatch: Dispatch) => {
     }
 }
 
-export const createPostCommentAC = (data1: IComment, data2: ICreatePostCommentRequest) => async (dispatch: Dispatch) => {
+export const createPostCommentAC = (data1: IComment, data2: ICreatePostCommentRequest, place: string) => async (dispatch: Dispatch) => {
     try {
         await api.posts.createPostComment(data2);
-        dispatch(local_createPostComment({comment: data1, postId: data2.postId!}));
+        dispatch(local_createPostComment({comment: data1, postId: data2.postId!, place}));
+
     } catch (error: any) {
         console.error(error);
     }

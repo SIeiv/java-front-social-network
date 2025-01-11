@@ -1,5 +1,5 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {IAddUserRequest, IDeleteUserRequest, IProfileResponse, IUser} from "@/api/profile/types.ts";
+import {IDetailsResponse} from "@/api/auth/types.ts";
 
 const initialState = {
     authData: {
@@ -16,7 +16,7 @@ const initialState = {
         error: null as null | string,
     },
     profileData: {
-        profile: null as null | IProfileResponse,
+        profile: null as null,
         isLoading: false as boolean,
         error: null as null | string,
         role: null as null | "ROLE_USER" | "ROLE_ADMIN" | "ROLE_MODERATOR",
@@ -24,7 +24,7 @@ const initialState = {
     },
 
     getAllUsersData: {
-        allUsers: null as null | IUser[],
+        allUsers: null as null,
         isLoading: false as boolean
     },
 
@@ -36,6 +36,7 @@ const initialState = {
 
     appInitializeData: {
         initialized: false,
+        initialUserData: 1 as number | null | IDetailsResponse,
         isLoading: false as boolean,
         error: null as null | string
     }
@@ -131,12 +132,14 @@ export const authSlice = createSlice({
         appInitializeStart: (state) => {
             state.appInitializeData.isLoading = true
         },
-        appInitializeSuccess: (state) => {
+        appInitializeSuccess: (state, action: PayloadAction<IDetailsResponse>) => {
             state.appInitializeData.initialized = true;
+            state.appInitializeData.initialUserData = {...action.payload};
             state.appInitializeData.isLoading = false;
         },
         appInitializeFail: (state, action: PayloadAction<string>) => {
             state.appInitializeData.isLoading = false;
+            state.appInitializeData.initialUserData = null;
             state.appInitializeData.error = action.payload;
         },
 

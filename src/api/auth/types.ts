@@ -12,6 +12,10 @@ export interface IRegisterRequest {
 export interface IDetailsResponse {
     "id": number,
     "username": string,
+    "shortname": string,
+    "firstname": string,
+    "lastname": string,
+    "email": string,
     "profileId": number,
     verified: boolean,
 }

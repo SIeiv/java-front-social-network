@@ -50,13 +50,13 @@ const Feed: FC<IFeedProps> = ({type}) => {
     )
 
     const feedPosts: ReactElement[] = feed.map((post: IPost) =>
-        <PostItem type={"another"} firstName={"Маркос cделай"} lastName={"имена авторов постов"}
-                  shortName={"или получение имени фамилии и shotname по profileId"} postData={post}/>
+        <PostItem type={"another"} firstName={post.firstName} lastName={post.lastName}
+                  shortName={post.shortName} postData={post}/>
     );
 
     const recommendedFeedPosts: ReactElement[] = recommendedFeed.posts.map((post: IPost) =>
-        <PostItem type={"another"} firstName={"Маркос cделай"} lastName={"имена авторов постов"}
-                  shortName={"или получение имени фамилии и shotname по profileId"} postData={post}/>
+        <PostItem type={"another"} firstName={post.firstName} lastName={post.lastName}
+                  shortName={post.shortName} postData={post}/>
     );
 
     return (
@@ -64,7 +64,7 @@ const Feed: FC<IFeedProps> = ({type}) => {
             <div className={"w-[600px] box-border flex flex-col gap-3"}>
                 {
                     type === "recommended" &&
-                    <div>
+                    <div className={"w-[600px] box-border flex flex-col gap-3 rounded-lg bg-white items-start p-3 box-border"}>
                         {recommendedUsersEls}
                     </div>
                 }

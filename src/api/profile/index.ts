@@ -16,6 +16,9 @@ export const fillProfile = (params: IFillProfileRequest): AxiosPromise<string> =
 export const getMyPage = (): AxiosPromise<IUserPage> =>
     axiosInstance.get(endpoints.PROFILE.GET_MY_PAGE);
 
+export const getMyThumbnail = (): AxiosPromise<string> =>
+    axiosInstance.get(endpoints.PROFILE.GET_MY_THUMBNAIL);
+
 export const getAnotherPage = (username: string): AxiosPromise<IUserPage> =>
     axiosInstance.get(BASE_URL + `/user/${username}`);
 

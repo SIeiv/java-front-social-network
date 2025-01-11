@@ -21,6 +21,7 @@ const initialState = {
     mySubscribers: [] as IShortUser[],
     myFriends: [] as IShortUser[],
     mySubscriptions: [] as IShortUser[],
+    myThumbnail: null as null | string,
 
     anotherPageData: {
         "profileId": null,
@@ -77,6 +78,10 @@ export const authSlice = createSlice({
                 user.thumbnail = `data:image/png;base64,${user.thumbnail}`
             })
             state.mySubscriptions = [...action.payload];
+        },
+
+        setMyThumbnail: (state, action: PayloadAction<string>) => {
+            state.myThumbnail = `data:image/png;base64,${action.payload}`;
         },
 
         editProfile: (state, action: PayloadAction<IFillProfileRequest>) => {
@@ -137,13 +142,22 @@ export const authSlice = createSlice({
             state.anotherSubscriptions = initialState.anotherSubscriptions;
         },
 
-        local_createPostComment: (state, action: PayloadAction<{ comment: IComment, postId: number }>) => {
-            state.myPageData.userPosts.forEach((post: IPost) => {
-                if (post.id === action.payload.postId) {
-                    post.commentsCount!++;
-                    post.comments.push(action.payload.comment);
-                }
-            })
+        local_createPostComment: (state, action: PayloadAction<{ comment: IComment, postId: number, place: string }>) => {
+            if (action.payload.place === "myPage") {
+                state.myPageData.userPosts.forEach((post: IPost) => {
+                    if (post.id === action.payload.postId) {
+                        post.commentsCount!++;
+                        post.comments.push(action.payload.comment);
+                    }
+                })
+            } else if (action.payload.place === "anotherPage") {
+                state.anotherPageData.userPosts.forEach((post: IPost) => {
+                    if (post.id === action.payload.postId) {
+                        post.commentsCount!++;
+                        post.comments.push(action.payload.comment);
+                    }
+                })
+            }
         },
 
 
@@ -164,7 +178,8 @@ export const {
     setAnotherSubscribers,
     setAnotherFriends,
     clearAnotherUser,
-    local_createPostComment
+    local_createPostComment,
+    setMyThumbnail
 } = authSlice.actions;
 
 export default authSlice.reducer;

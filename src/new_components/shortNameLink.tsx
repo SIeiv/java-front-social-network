@@ -5,12 +5,15 @@ import {Label} from "@/components/ui/label.tsx";
 interface IShortNameLink {
     content: string;
     to: string;
+    classname?: string;
 }
 
-const ShortNameLink: FC<IShortNameLink> = ({content, to}) => {
+const ShortNameLink: FC<IShortNameLink> = ({content, to, classname}) => {
+
+
     return (
-        <NavLink to={to} className={"h-[14px]"}>
-            <Label className={"cursor-pointer hover:underline h-[14px] flex justify-start"}>{content}</Label>
+        <NavLink to={to} className={""}>
+            <Label className={classname + " cursor-pointer hover:underline flex justify-start"}>{content}</Label>
         </NavLink>
     );
 };
