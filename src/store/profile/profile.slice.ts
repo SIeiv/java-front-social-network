@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {IComment, IPost, IShortUser, IUserPage} from "@/types.ts";
 import {IFillProfileRequest} from "@/api/profile/types.ts";
-import {ICreatePostCommentRequest} from "@/api/posts/types.ts";
+import {ICreatePostCommentRequest, IDeletePostRequest} from "@/api/posts/types.ts";
 
 
 const initialState = {
@@ -93,12 +93,25 @@ export const authSlice = createSlice({
             state.myPageData.image = action.payload.avatar;
         },
 
-        local_createPost: (state, action: PayloadAction<IPost>) => {
-            state.myPageData.userPosts.push(action.payload);
+        local_createPost: (state, action: PayloadAction<{post: IPost, postId: number}>) => {
+            const finallyPost: IPost = {
+                ...action.payload.post,
+                id: action.payload.postId,
+            }
+
+            state.myPageData.userPosts.push(finallyPost);
+        },
+
+        local_deletePost: (state, action: PayloadAction<IDeletePostRequest>) => {
+            state.myPageData.userPosts.forEach((post: IPost, index) => {
+                if (post.id === action.payload.postId) {
+                    state.myPageData.userPosts.splice(index, 1);
+                }
+            })
         },
 
         local_likePost: (state, action: PayloadAction<IPost>) => {
-            state.myPageData.userPosts.push(action.payload);
+
         },
 
         setAnotherPageData: (state, action: PayloadAction<IUserPage>) => {
@@ -179,7 +192,8 @@ export const {
     setAnotherFriends,
     clearAnotherUser,
     local_createPostComment,
-    setMyThumbnail
+    setMyThumbnail,
+    local_deletePost
 } = authSlice.actions;
 
 export default authSlice.reducer;

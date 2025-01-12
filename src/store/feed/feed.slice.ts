@@ -49,12 +49,21 @@ export const feedSlice = createSlice({
             })
         },
 
+        local_createRecommendationPostComment: (state, action: PayloadAction<{ comment: IComment, postId: number }>) => {
+            state.recommended.posts.forEach((post: IPost) => {
+                if (post.id === action.payload.postId) {
+                    post.commentsCount!++;
+                    post.comments.push(action.payload.comment);
+                }
+            })
+        },
+
         resetFeed: () => initialState
     }
 })
 
 export const {
-    resetFeed, setFeed, setRecommended, local_createFeedPostComment
+    resetFeed, setFeed, setRecommended, local_createFeedPostComment, local_createRecommendationPostComment
 } = feedSlice.actions;
 
 export default feedSlice.reducer;

@@ -15,7 +15,7 @@ import {Input} from "@/components/ui/input.tsx";
 import ShortNameLink from "@/new_components/shortNameLink.tsx";
 import DateLabel from "@/new_components/DateLabel.tsx";
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
-import {createPostCommentAC} from "@/store/profile/actionCreators.ts";
+import {createPostCommentAC, deletePostAC} from "@/store/profile/actionCreators.ts";
 import {ICreatePostCommentRequest} from "@/api/posts/types.ts";
 import {IDetailsResponse} from "@/api/auth/types.ts";
 
@@ -63,6 +63,10 @@ const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type
         setCommentContent("");
     }
 
+    const handleDeletePost = () => {
+        dispatch(deletePostAC(postData));
+    }
+
     return (
         <div className={"w-full flex flex-col gap-2"}>
             <div className={"flex justify-between"}>
@@ -90,7 +94,7 @@ const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type
                                 <Label>Изменить</Label>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator/>
-                            <DropdownMenuItem className={"text-red-600"}>
+                            <DropdownMenuItem onClick={handleDeletePost} className={"text-red-600"}>
                                 <Trash2 />
                                 <Label>Удалить</Label>
                             </DropdownMenuItem>

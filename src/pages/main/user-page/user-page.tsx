@@ -3,9 +3,8 @@ import {Button} from "@/components/ui/button.tsx";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
 import PostItem from "@/new_components/postItem.tsx";
 import {FC, ReactElement, useEffect, useRef, useState} from "react";
-import {useDispatch} from "react-redux";
-import {createPostAC, fillProfile2AC, getAnotherPageAC, getMyPageAC} from "@/store/profile/actionCreators.ts";
-import {useAppSelector} from "@/hooks.ts";
+import { fillProfile2AC, getAnotherPageAC, getMyPageAC} from "@/store/profile/actionCreators.ts";
+import {useAppDispatch, useAppSelector} from "@/hooks.ts";
 import {IPost, IShortUser, IUserPage} from "@/types.ts";
 import {AtSign, Ghost, Gift, Info} from "lucide-react";
 import {
@@ -19,11 +18,9 @@ import {
 import ShortUserItem from "@/new_components/shortUserItem.tsx";
 import AuthInput from "@/pages/auth/auth-input.tsx";
 import FillProfileGender from "@/pages/fill-profile/fill-profile-gender.tsx";
-import {Textarea} from "@/components/ui/textarea.tsx";
-import {ICreatePostRequest} from "@/api/posts/types.ts";
 import {useLocation} from "react-router";
-import {clearAnotherUser} from "@/store/profile/profile.slice.ts";
 import ShortNameLink from "@/new_components/shortNameLink.tsx";
+import FormPost from "@/pages/main/user-page/form-post.tsx";
 
 interface IUserPageProps {
     type: "my" | "another"
@@ -31,7 +28,7 @@ interface IUserPageProps {
 
 
 const UserPage: FC<IUserPageProps> = ({type}) => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     let myPageData: IUserPage;
     let mySubscribers: IShortUser[] = [];
@@ -41,6 +38,8 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const {pathname} = useLocation();
 
     const itemsCount = 4;
+
+    const myThumbnail = useAppSelector(state => state.profile.myThumbnail);
 
     if (type === "my") {
         myPageData = useAppSelector(state => state.profile.myPageData);
@@ -64,7 +63,6 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const [birthDate, setBirthDate] = useState("");
     const [gender, setGender] = useState(0);
 
-    const [addPostContent, setAddPostContent] = useState("");
 
     const [imagePreviewState, setImagePreviewState] = useState(false);
     const [currentImagePreview, setCurrentImagePreview] = useState("");
@@ -114,30 +112,6 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
 
         dispatch(fillProfile2AC(data));
         setEditProfileState(false);
-    }
-
-    const handleCreatePostSubmit = () => {
-        const data: ICreatePostRequest = {
-            image: "",
-            profileId: myPageData.profileId,
-            content: addPostContent
-        }
-
-        const data2: IPost = {
-            "id": 0,
-            "profileId": myPageData.profileId,
-            "publicationDate": new Date().toISOString(),
-            "authorImage": "",
-            "image": null,
-            "content": addPostContent,
-            "likes": [],
-            "likesCount": 0,
-            "commentsCount": 0,
-            "comments": []
-        }
-
-        dispatch(createPostAC(data, data2));
-        setCreatePostState(false);
     }
 
     let options = {
@@ -215,24 +189,8 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                 </DialogContent>
             </Dialog>
 
-            <Dialog open={createPostState} onOpenChange={() => setCreatePostState(false)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Создать пост</DialogTitle>
-                        <DialogDescription>
-                            <div className={"flex flex-col gap-3 mt-3"}>
-                                <Textarea value={addPostContent} onChange={(e) => {
-                                    setAddPostContent(e.target.value)
-                                }}
-                                          placeholder={"Напишите что нибудь..."}></Textarea>
-                            </div>
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button onClick={handleCreatePostSubmit}>Создать</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <FormPost state={createPostState} setState={setCreatePostState}
+                      profileId={myPageData.profileId} thumbnail={myThumbnail}/>
 
             <Dialog open={imagePreviewState} onOpenChange={() => setImagePreviewState(false)}>
                 <DialogContent className={`p-0 max-h-[80vh]`}>

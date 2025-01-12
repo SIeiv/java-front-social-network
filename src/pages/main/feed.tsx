@@ -50,12 +50,12 @@ const Feed: FC<IFeedProps> = ({type}) => {
     )
 
     const feedPosts: ReactElement[] = feed.map((post: IPost) =>
-        <PostItem type={"another"} firstName={post.firstName} lastName={post.lastName}
+        <PostItem type={"another"} place={"feed"} firstName={post.firstName} lastName={post.lastName}
                   shortName={post.shortName} postData={post}/>
     );
 
     const recommendedFeedPosts: ReactElement[] = recommendedFeed.posts.map((post: IPost) =>
-        <PostItem type={"another"} firstName={post.firstName} lastName={post.lastName}
+        <PostItem type={"another"} place={"recommended"} firstName={post.firstName} lastName={post.lastName}
                   shortName={post.shortName} postData={post}/>
     );
 

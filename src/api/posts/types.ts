@@ -9,3 +9,8 @@ export interface ICreatePostCommentRequest {
     content: string | null,
     postId: number | null,
 }
+
+export interface IDeletePostRequest {
+    "profileId": number,
+    "postId": number
+}

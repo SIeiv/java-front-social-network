@@ -15,6 +15,7 @@ const endpoints = {
     POSTS: {
         CREATE_POST: BASE_URL + "/posts/create",
         CREATE_POST_COMMENT: BASE_URL + "/comments/create",
+        DELETE_POST: BASE_URL + "/posts/delete",
     },
     FEED: {
         GET_FEED: BASE_URL + "/feed/main",

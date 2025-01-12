@@ -7,7 +7,7 @@ import {setUserVerified} from "@/store/auth/new_auth.slice.ts";
 import {
     clearAnotherUser,
     editProfile,
-    local_createPost, local_createPostComment,
+    local_createPost, local_createPostComment, local_deletePost,
     setAnotherFriends,
     setAnotherPageData,
     setAnotherSubscribers,
@@ -17,9 +17,9 @@ import {
     setMySubscribers,
     setMySubscriptions, setMyThumbnail
 } from "@/store/profile/profile.slice.ts";
-import {ICreatePostCommentRequest, ICreatePostRequest} from "@/api/posts/types.ts";
+import {ICreatePostCommentRequest, ICreatePostRequest, IDeletePostRequest} from "@/api/posts/types.ts";
 import {IComment, IPost} from "@/types.ts";
-import {local_createFeedPostComment} from "@/store/feed/feed.slice.ts";
+import {local_createFeedPostComment, local_createRecommendationPostComment} from "@/store/feed/feed.slice.ts";
 
 
 export const fillProfileAC = (data: IFillProfileRequest) => async (dispatch: Dispatch) => {
@@ -151,8 +151,22 @@ export const getAnotherPageAC = () => async (dispatch: Dispatch) => {
 
 export const createPostAC = (data: ICreatePostRequest, data2: IPost) => async (dispatch: Dispatch) => {
     try {
-        await api.posts.createPost(data);
-        dispatch(local_createPost(data2));
+        const response = await api.posts.createPost(data);
+        dispatch(local_createPost({post: data2, postId: response.data}));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const deletePostAC = (data: IPost) => async (dispatch: Dispatch) => {
+    try {
+        const request: IDeletePostRequest = {
+            postId: data.id!,
+            profileId: data.profileId!,
+        }
+
+        await api.posts.deletePost(request);
+        dispatch(local_deletePost(request));
     } catch (error: any) {
         console.error(error);
     }
@@ -170,8 +184,14 @@ export const likePostAC = (postId: number) => async (dispatch: Dispatch) => {
 export const createPostCommentAC = (data1: IComment, data2: ICreatePostCommentRequest, place: string) => async (dispatch: Dispatch) => {
     try {
         await api.posts.createPostComment(data2);
-        dispatch(local_createPostComment({comment: data1, postId: data2.postId!, place}));
 
+        if (place === "myPage" || place === "anotherPage") {
+            dispatch(local_createPostComment({comment: data1, postId: data2.postId!, place}));
+        } else if (place === "feed") {
+            dispatch(local_createFeedPostComment({comment: data1, postId: data2.postId!}));
+        } else if (place === "recommended") {
+            dispatch(local_createRecommendationPostComment({comment: data1, postId: data2.postId!}));
+        }
     } catch (error: any) {
         console.error(error);
     }
