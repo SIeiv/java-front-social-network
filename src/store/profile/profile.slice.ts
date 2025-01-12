@@ -114,6 +114,20 @@ export const authSlice = createSlice({
 
         },
 
+        local_updateAvatar: (state, action: PayloadAction<{img: string, userId: number}>) => {
+            state.myPageData.image = action.payload.img;
+            state.myThumbnail = action.payload.img;
+
+            state.myPageData.userPosts.forEach((post: IPost, index) => {
+                post.authorImage = action.payload.img;
+                post.comments.forEach((comment, index) => {
+                    if (comment.authorId === action.payload.userId) {
+                        comment.image = action.payload.img;
+                    }
+                })
+            })
+        },
+
         setAnotherPageData: (state, action: PayloadAction<IUserPage>) => {
             action.payload.userPosts.forEach((post) => {
                 post.authorImage = `data:image/png;base64,${post.authorImage}`;
@@ -193,7 +207,8 @@ export const {
     clearAnotherUser,
     local_createPostComment,
     setMyThumbnail,
-    local_deletePost
+    local_deletePost,
+    local_updateAvatar
 } = authSlice.actions;
 
 export default authSlice.reducer;

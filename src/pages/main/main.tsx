@@ -18,8 +18,6 @@ const Main = () => {
     useEffect(() => {
         if (!profile) {
             navigate("/auth/login");
-        } else {
-            navigate("/my-page");
         }
     }, [profile])
 

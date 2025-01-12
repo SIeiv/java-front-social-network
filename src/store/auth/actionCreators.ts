@@ -44,7 +44,7 @@ export const loginUser =
                 const verified = store.getState().newAuth.userData.verified;
 
                 if (verified) {
-                    window.location.href = "/";
+                    window.location.href = "/my-page";
                 } else {
                     window.location.href = "/fill-profile";
                 }

@@ -7,7 +7,7 @@ import {setUserVerified} from "@/store/auth/new_auth.slice.ts";
 import {
     clearAnotherUser,
     editProfile,
-    local_createPost, local_createPostComment, local_deletePost,
+    local_createPost, local_createPostComment, local_deletePost, local_updateAvatar,
     setAnotherFriends,
     setAnotherPageData,
     setAnotherSubscribers,
@@ -153,6 +153,17 @@ export const createPostAC = (data: ICreatePostRequest, data2: IPost) => async (d
     try {
         const response = await api.posts.createPost(data);
         dispatch(local_createPost({post: data2, postId: response.data}));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const updateAvatarAC = (data: FileList, img: string, userId: number) => async (dispatch: Dispatch) => {
+    try {
+        dispatch(local_updateAvatar({img, userId}))
+        await api.profile.updateAvatar({picture: data[0]});
+
+
     } catch (error: any) {
         console.error(error);
     }

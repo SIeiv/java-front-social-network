@@ -10,6 +10,10 @@ export interface IFillProfileRequest {
     "avatar": string//?
 }
 
+export interface IUpdateAvatarRequest {
+    picture: File
+}
+
 export type IGetUserSubscribersResponse = IShortUser[];
 export type IGetUserFriendsResponse = IShortUser[];
 export type IGetUserSubscriptionsResponse = IShortUser[];

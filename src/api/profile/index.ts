@@ -2,7 +2,11 @@ import { axiosInstance } from "@/api/instance.ts";
 import {AxiosPromise} from "axios";
 import endpoints, {BASE_URL} from "@/api/endpoints.ts";
 import {
-    IFillProfileRequest, IGetUserFriendsResponse, IGetUserSubscribersResponse, IGetUserSubscriptionsResponse,
+    IFillProfileRequest,
+    IGetUserFriendsResponse,
+    IGetUserSubscribersResponse,
+    IGetUserSubscriptionsResponse,
+    IUpdateAvatarRequest,
 } from "@/api/profile/types.ts";
 import {IUserPage} from "@/types.ts";
 
@@ -18,6 +22,13 @@ export const getMyPage = (): AxiosPromise<IUserPage> =>
 
 export const getMyThumbnail = (): AxiosPromise<string> =>
     axiosInstance.get(endpoints.PROFILE.GET_MY_THUMBNAIL);
+
+export const updateAvatar = (params: IUpdateAvatarRequest): AxiosPromise<string> =>
+    axiosInstance.post(endpoints.PROFILE.UPDATE_AVATAR, params, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    });
 
 export const getAnotherPage = (username: string): AxiosPromise<IUserPage> =>
     axiosInstance.get(BASE_URL + `/user/${username}`);

@@ -11,6 +11,7 @@ const endpoints = {
         FILL_PROFILE: BASE_URL + "/user/fill-profile",
         GET_MY_PAGE: BASE_URL + "/user/mypage",
         GET_MY_THUMBNAIL: BASE_URL + "/user/mypage/thumbnail",
+        UPDATE_AVATAR: BASE_URL + "/user/update-picture",
     },
     POSTS: {
         CREATE_POST: BASE_URL + "/posts/create",

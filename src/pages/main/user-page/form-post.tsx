@@ -51,6 +51,8 @@ const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail}) => {
 
         dispatch(createPostAC(data, data2));
         setState(false);
+        setImageBase64("");
+        setPostContent("");
     }
 
     const onImageInputChange = () => {

@@ -21,6 +21,7 @@ import FillProfileGender from "@/pages/fill-profile/fill-profile-gender.tsx";
 import {useLocation} from "react-router";
 import ShortNameLink from "@/new_components/shortNameLink.tsx";
 import FormPost from "@/pages/main/user-page/form-post.tsx";
+import FormAvatar from "@/pages/main/user-page/form-avatar.tsx";
 
 interface IUserPageProps {
     type: "my" | "another"
@@ -56,6 +57,7 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const [profileDetailsState, setProfileDetailsState] = useState(false);
     const [editProfileState, setEditProfileState] = useState(false);
     const [createPostState, setCreatePostState] = useState(false);
+    const [updateAvatarState, setUpdateAvatarState] = useState(false);
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -198,6 +200,8 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                 </DialogContent>
             </Dialog>
 
+            <FormAvatar state={updateAvatarState} setState={setUpdateAvatarState}/>
+
 
             {/*основная инфа о юзере*/}
             <div
@@ -224,9 +228,14 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                 </div>
                 <div>
                     {type === "my"
-                        ? <Button variant={"secondary"} onClick={() => {
-                            setEditProfileState(true)
-                        }}>Редактировать профиль</Button>
+                        ? <div className={"flex gap-2"}>
+                            <Button variant={"secondary"} onClick={() => {
+                                setUpdateAvatarState(true);
+                            }}>Изменить аватарку</Button>
+                            <Button variant={"secondary"} onClick={() => {
+                                setEditProfileState(true)
+                            }}>Редактировать профиль</Button>
+                        </div>
                         : <div className={"flex gap-1.5"}>
                             <Button variant={"secondary"}>Подписаться</Button>
                         </div>
