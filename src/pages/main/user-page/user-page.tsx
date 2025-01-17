@@ -3,7 +3,13 @@ import {Button} from "@/components/ui/button.tsx";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
 import PostItem from "@/new_components/postItem.tsx";
 import {FC, ReactElement, useEffect, useRef, useState} from "react";
-import { fillProfile2AC, getAnotherPageAC, getMyPageAC} from "@/store/profile/actionCreators.ts";
+import {
+    fillProfile2AC,
+    getAnotherPageAC,
+    getMyPageAC,
+    getMySubscriptionsAC,
+    subscribeAC
+} from "@/store/profile/actionCreators.ts";
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
 import {IPost, IShortUser, IUserPage} from "@/types.ts";
 import {AtSign, Ghost, Gift, Info} from "lucide-react";
@@ -41,6 +47,8 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const itemsCount = 4;
 
     const myThumbnail = useAppSelector(state => state.profile.myThumbnail);
+    const details = useAppSelector(state => state.auth.appInitializeData.initialUserData)
+    const fullMySubscriptions =  useAppSelector(state => state.profile.mySubscriptions);
 
     if (type === "my") {
         myPageData = useAppSelector(state => state.profile.myPageData);
@@ -69,13 +77,7 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const [imagePreviewState, setImagePreviewState] = useState(false);
     const [currentImagePreview, setCurrentImagePreview] = useState("");
 
-    useEffect(() => {
-        if (type === "my") {
-            if (!myPageData.shortName) dispatch(getMyPageAC());
-        } else {
-            dispatch(getAnotherPageAC());
-        }
-    }, [type, pathname]);
+    const [isSubscribed, setIsSubscribed] = useState(false);
 
     useEffect(() => {
         setFirstName(myPageData.firstName!);
@@ -83,7 +85,29 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
         setShortName(myPageData.shortName!);
         setBirthDate(myPageData.dateOfBirth!);
         setGender(myPageData.gender! === "male" ? 0 : 1);
+        setIsSubscribed(false);
     }, [myPageData]);
+
+    useEffect(() => {
+        if (type === "my") {
+            if (!myPageData.shortName) dispatch(getMyPageAC());
+        } else {
+            dispatch(getAnotherPageAC());
+            if (fullMySubscriptions.length === 0) dispatch(getMySubscriptionsAC(details!.shortname))
+        }
+    }, [type, pathname]);
+
+    useEffect(() => {
+        if (type === "another") {
+            for (let i = 0; i < fullMySubscriptions.length; i++) {
+                if (fullMySubscriptions[i].shortName === myPageData.shortName) {
+                    setIsSubscribed(true);
+                    break;
+                }
+            }
+        }
+
+    }, [fullMySubscriptions, pathname, myPageData]);
 
     const posts: ReactElement[] = myPageData.userPosts.map((post: IPost) =>
         <PostItem type={type} firstName={myPageData.firstName} lastName={myPageData.lastName}
@@ -116,6 +140,18 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
         setEditProfileState(false);
     }
 
+    const handleSubscribe = () => {
+        const data: IShortUser = {
+            shortName: myPageData.shortName!,
+            profileId: myPageData.profileId!,
+            lastName: myPageData.lastName!,
+            firstName: myPageData.firstName!,
+            thumbnail: myPageData.image!
+        }
+
+        dispatch(subscribeAC(data))
+    }
+
     let options = {
         year: 'numeric',
         month: 'short',
@@ -127,7 +163,7 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const imgRef = useRef<HTMLImageElement>(null);
 
     return (
-        <div className={"w-fill flex flex-col gap-3"}>
+        <div>
 
             <Dialog open={profileDetailsState} onOpenChange={() => setProfileDetailsState(false)}>
                 <DialogContent>
@@ -166,7 +202,8 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                                 <div className={"flex flex-col gap-1.5"}>
                                     <AuthInput title={"Ваше имя"} placeholder={"Введите имя"} value={firstName}
                                                onChange={setFirstName}/>
-                                    <AuthInput title={"Ваша фамилия"} placeholder={"Введите фамилию"} value={lastName}
+                                    <AuthInput title={"Ваша фамилия"} placeholder={"Введите фамилию"}
+                                               value={lastName}
                                                onChange={setLastName}/>
                                     <AuthInput title={"Никнейм"} placeholder={"Введите никнейм"} value={shortName}
                                                onChange={setShortName}/>
@@ -191,7 +228,7 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                 </DialogContent>
             </Dialog>
 
-            <FormPost state={createPostState} setState={setCreatePostState}
+            <FormPost state={createPostState} setState={setCreatePostState} type={"add"}
                       profileId={myPageData.profileId} thumbnail={myThumbnail}/>
 
             <Dialog open={imagePreviewState} onOpenChange={() => setImagePreviewState(false)}>
@@ -202,94 +239,99 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
 
             <FormAvatar state={updateAvatarState} setState={setUpdateAvatarState}/>
 
+            <div className={"w-fill flex flex-col gap-3"}>
 
-            {/*основная инфа о юзере*/}
-            <div
-                className={"h-[150px] w-[1032px] bg-white rounded-lg box-border p-3 flex justify-between items-center"}>
-                <div className={"h-full flex gap-3"}>
-                    <Avatar className={"w-32 h-32"}>
-                        <AvatarImage onClick={() => {
-                            setImagePreviewState(true);
-                            setCurrentImagePreview(myPageData.image!);
-                        }} src={myPageData.image!}/>
-                        <AvatarFallback className={"text-3xl"}>{(myPageData.firstName && myPageData.lastName)
-                            && myPageData.firstName[0] + myPageData.lastName[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className={"flex flex-col justify-center items-start h-full gap-2"}>
-                        <Label className={"text-base"}>{myPageData.firstName + " " + myPageData.lastName}</Label>
-                        {/*<Label>{"@" + myPageData.shortName}</Label>*/}
-                        <Label onClick={() => {
-                            setProfileDetailsState(true)
-                        }} className={"hover:underline cursor-pointer flex items-center justify-center gap-1"}>
-                            <Info size={20}/>
-                            Подробнее
-                        </Label>
+                {/*основная инфа о юзере*/}
+                <div
+                    className={"h-[150px] w-[1032px] bg-white rounded-lg box-border p-3 flex justify-between items-center"}>
+                    <div className={"h-full flex gap-3"}>
+                        <Avatar className={"w-32 h-32"}>
+                            <AvatarImage onClick={() => {
+                                setImagePreviewState(true);
+                                setCurrentImagePreview(myPageData.image!);
+                            }} src={myPageData.image!}/>
+                            <AvatarFallback className={"text-3xl"}>{(myPageData.firstName && myPageData.lastName)
+                                && myPageData.firstName[0] + myPageData.lastName[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className={"flex flex-col justify-center items-start h-full gap-2"}>
+                            <Label className={"text-base"}>{myPageData.firstName + " " + myPageData.lastName}</Label>
+                            {/*<Label>{"@" + myPageData.shortName}</Label>*/}
+                            <Label onClick={() => {
+                                setProfileDetailsState(true)
+                            }} className={"hover:underline cursor-pointer flex items-center justify-center gap-1"}>
+                                <Info size={20}/>
+                                Подробнее
+                            </Label>
+                        </div>
                     </div>
-                </div>
-                <div>
-                    {type === "my"
-                        ? <div className={"flex gap-2"}>
-                            <Button variant={"secondary"} onClick={() => {
-                                setUpdateAvatarState(true);
-                            }}>Изменить аватарку</Button>
-                            <Button variant={"secondary"} onClick={() => {
-                                setEditProfileState(true)
-                            }}>Редактировать профиль</Button>
-                        </div>
-                        : <div className={"flex gap-1.5"}>
-                            <Button variant={"secondary"}>Подписаться</Button>
-                        </div>
-                    }
+                    <div>
+                        {type === "my"
+                            ? <div className={"flex gap-2"}>
+                                <Button variant={"secondary"} onClick={() => {
+                                    setUpdateAvatarState(true);
+                                }}>Изменить аватарку</Button>
+                                <Button variant={"secondary"} onClick={() => {
+                                    setEditProfileState(true)
+                                }}>Редактировать профиль</Button>
+                            </div>
+                            : <div className={"flex gap-1.5"}>
+                                {isSubscribed
+                                    ? <Button variant={"ghost"}>Отписаться</Button>
+                                    : <Button onClick={handleSubscribe}>Подписаться</Button>}
+                            </div>
+                        }
 
-                </div>
-            </div>
-
-            {/*посты и подпещики*/}
-            <div className={"w-full flex gap-3"}>
-
-                {/*посты*/}
-                <div className={"w-[600px] box-border flex flex-col gap-3"}>
-                    {type === "my" && <div className={"rounded-lg w-full"}>
-                        <Button className={"w-full h-[40px] rounded-lg"} onClick={() => {
-                            setCreatePostState(true);
-                        }}>Создать пост</Button>
-                    </div>}
-                    <div
-                        className={"flex flex-col justify-center rounded-lg bg-white items-start p-3 gap-6 box-border"}>
-                        {posts}
                     </div>
                 </div>
 
-                <div className={"flex flex-col gap-3"}>
-                    <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
-                        <div className={"flex flex-col gap-3"}>
-                            <ShortNameLink content={"Подписчики " + myPageData.subscribersCount} to={
-                                type === "my" ? "/my-friends/subscribers" : `/friends/subscribers/${myPageData.shortName}`
-                            }/>
-                            <div className={"flex justify-start items-start gap-1"}>
-                                {subscribers}
+                {/*посты и подпещики*/}
+                <div className={"w-full flex gap-3"}>
+
+                    {/*посты*/}
+                    <div className={"w-[600px] box-border flex flex-col gap-3"}>
+                        {type === "my" && <div className={"rounded-lg w-full"}>
+                            <Button className={"w-full h-[40px] rounded-lg"} onClick={() => {
+                                setCreatePostState(true);
+                            }}>Создать пост</Button>
+                        </div>}
+                        <div
+                            className={"flex flex-col justify-center rounded-lg bg-white items-start p-3 gap-6 box-border"}>
+                            {posts}
+                        </div>
+                    </div>
+
+                    <div className={"sticky top-[96px] h-[520px] flex flex-col gap-3"}>
+                        <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
+                            <div className={"flex flex-col gap-3"}>
+                                <ShortNameLink content={"Подписчики " + myPageData.subscribersCount} to={
+                                    type === "my" ? "/my-friends/subscribers" : `/friends/subscribers/${myPageData.shortName}`
+                                }/>
+                                <div className={"flex justify-start items-start gap-1"}>
+                                    {subscribers}
+                                </div>
+                            </div>
+                            <div className={"flex flex-col gap-3"}>
+                                <ShortNameLink content={"Друзья " + myPageData.friendsCount} to={
+                                    type === "my" ? "/my-friends/friends" : `/friends/friends/${myPageData.shortName}`
+                                }/>
+                                <div className={"flex justify-start items-start gap-1"}>
+                                    {friends}
+                                </div>
                             </div>
                         </div>
-                        <div className={"flex flex-col gap-3"}>
-                            <ShortNameLink content={"Друзья " + myPageData.friendsCount} to={
-                                type === "my" ? "/my-friends/friends" : `/friends/friends/${myPageData.shortName}`
+                        <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
+                            <ShortNameLink content={"Подписки " + myPageData.subscriptionsCount} to={
+                                type === "my" ? "/my-friends/subscriptions" : `/friends/subscriptions/${myPageData.shortName}`
                             }/>
                             <div className={"flex justify-start items-start gap-1"}>
-                                {friends}
+                                {subscriptions}
                             </div>
-                        </div>
-                    </div>
-                    <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
-                        <ShortNameLink content={"Подписки " + myPageData.subscriptionsCount} to={
-                            type === "my" ? "/my-friends/subscriptions" : `/friends/subscriptions/${myPageData.shortName}`
-                        }/>
-                        <div className={"flex justify-start items-start gap-1"}>
-                            {subscriptions}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
     );
 };
 

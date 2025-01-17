@@ -1,10 +1,6 @@
 import {Route, Routes} from "react-router";
 import Friends from "@/pages/main/friends.tsx";
 
-interface IRouterFriends {
-    type: "my" | "another";
-}
-
 const RouterFriends = () => {
     return (
         <div>

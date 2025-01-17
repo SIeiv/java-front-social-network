@@ -7,7 +7,13 @@ import {setUserVerified} from "@/store/auth/new_auth.slice.ts";
 import {
     clearAnotherUser,
     editProfile,
-    local_createPost, local_createPostComment, local_deletePost, local_updateAvatar,
+    local_createPost,
+    local_createPostComment,
+    local_deletePost,
+    local_editPost,
+    local_likePost, local_likePost_another, local_subscribe,
+    local_unlikePost, local_unlikePost_another,
+    local_updateAvatar,
     setAnotherFriends,
     setAnotherPageData,
     setAnotherSubscribers,
@@ -15,11 +21,21 @@ import {
     setMyFriends,
     setMyPageData,
     setMySubscribers,
-    setMySubscriptions, setMyThumbnail
+    setMySubscriptions,
+    setMyThumbnail
 } from "@/store/profile/profile.slice.ts";
-import {ICreatePostCommentRequest, ICreatePostRequest, IDeletePostRequest} from "@/api/posts/types.ts";
-import {IComment, IPost} from "@/types.ts";
-import {local_createFeedPostComment, local_createRecommendationPostComment} from "@/store/feed/feed.slice.ts";
+import {
+    ICreatePostCommentRequest,
+    ICreatePostRequest,
+    IDeletePostRequest,
+    IEditPostRequest
+} from "@/api/posts/types.ts";
+import {IComment, IPost, IShortUser} from "@/types.ts";
+import {
+    local_createFeedPostComment,
+    local_createRecommendationPostComment,
+    local_likePost_feed, local_likePost_recommended, local_unlikePost_feed, local_unlikePost_recommended
+} from "@/store/feed/feed.slice.ts";
 
 
 export const fillProfileAC = (data: IFillProfileRequest) => async (dispatch: Dispatch) => {
@@ -158,6 +174,16 @@ export const createPostAC = (data: ICreatePostRequest, data2: IPost) => async (d
     }
 }
 
+export const editPostAC = (data: IEditPostRequest) => async (dispatch: Dispatch) => {
+    try {
+        const response = await api.posts.editPost({...data,
+            image: data.image && data.image.replace("data:image/jpeg;base64,", "") });
+        dispatch(local_editPost(data));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
 export const updateAvatarAC = (data: FileList, img: string, userId: number) => async (dispatch: Dispatch) => {
     try {
         dispatch(local_updateAvatar({img, userId}))
@@ -183,10 +209,37 @@ export const deletePostAC = (data: IPost) => async (dispatch: Dispatch) => {
     }
 }
 
-export const likePostAC = (postId: number) => async (dispatch: Dispatch) => {
+export const likePostAC = (postId: number, place: string) => async (dispatch: Dispatch) => {
     try {
+        if (place === "myPage") {
+            dispatch(local_likePost(postId));
+        } else if (place === "anotherPage") {
+            dispatch(local_likePost_another(postId));
+        } else if (place === "feed") {
+            dispatch(local_likePost_feed(postId));
+        } else if (place === "recommended") {
+            dispatch(local_likePost_recommended(postId));
+        }
         await api.posts.likePost(postId);
-        //dispatch(local_createPost(data2));
+
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const unlikePostAC = (postId: number, place: string) => async (dispatch: Dispatch) => {
+    try {
+        if (place === "myPage") {
+            dispatch(local_unlikePost(postId));
+        } else if (place === "anotherPage") {
+            dispatch(local_unlikePost_another(postId));
+        } else if (place === "feed") {
+            dispatch(local_unlikePost_feed(postId));
+        } else if (place === "recommended") {
+            dispatch(local_unlikePost_recommended(postId));
+        }
+        await api.posts.unlikePost(postId);
+
     } catch (error: any) {
         console.error(error);
     }
@@ -203,6 +256,15 @@ export const createPostCommentAC = (data1: IComment, data2: ICreatePostCommentRe
         } else if (place === "recommended") {
             dispatch(local_createRecommendationPostComment({comment: data1, postId: data2.postId!}));
         }
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const subscribeAC = (data: IShortUser) => async (dispatch: Dispatch) => {
+    try {
+        dispatch(local_subscribe(data))
+        await api.profile.subscribe({profileId: data.profileId});
     } catch (error: any) {
         console.error(error);
     }

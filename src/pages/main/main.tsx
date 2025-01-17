@@ -6,6 +6,7 @@ import UserPage from "@/pages/main/user-page/user-page.tsx";
 import Feed from "@/pages/main/feed.tsx";
 import RouterFriends from "@/pages/main/router-friends.tsx";
 import {useAppSelector} from "@/hooks.ts";
+import Search from "@/pages/main/search.tsx";
 
 
 const Main = () => {
@@ -13,7 +14,7 @@ const Main = () => {
 
     const profile = useAppSelector(state => state.auth.appInitializeData.initialUserData);
 
-    const appIsInit = useAppSelector(state => state.auth.appInitializeData.initialized);
+    /*const appIsInit = useAppSelector(state => state.auth.appInitializeData.initialized);*/
 
     useEffect(() => {
         if (!profile) {
@@ -35,6 +36,7 @@ const Main = () => {
                         <Route path="/feed/main" element={<Feed type={"main"}/>}/>
                         <Route path="/feed/recommended" element={<Feed type={"recommended"}/>}/>
                         <Route path="/my-friends/*" element={<RouterFriends/>}/>
+                        <Route path="/search/*" element={<Search/>}/>
                     </Routes>
                 </div>
             </div>

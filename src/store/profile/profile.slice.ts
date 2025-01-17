@@ -1,7 +1,7 @@
-import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {createSlice, Dispatch, PayloadAction} from "@reduxjs/toolkit";
 import {IComment, IPost, IShortUser, IUserPage} from "@/types.ts";
-import {IFillProfileRequest} from "@/api/profile/types.ts";
-import {ICreatePostCommentRequest, IDeletePostRequest} from "@/api/posts/types.ts";
+import {IFillProfileRequest, ISubscribeRequest} from "@/api/profile/types.ts";
+import {ICreatePostCommentRequest, IDeletePostRequest, IEditPostRequest} from "@/api/posts/types.ts";
 
 
 const initialState = {
@@ -102,6 +102,17 @@ export const authSlice = createSlice({
             state.myPageData.userPosts.push(finallyPost);
         },
 
+        local_editPost: (state, action: PayloadAction<IEditPostRequest>) => {
+            state.myPageData.userPosts.forEach((post: IPost) => {
+                if (post.id === action.payload.postId && post.profileId === action.payload.profileId) {
+                    post.content = action.payload.content;
+                    if (post.image) {
+                        post.image = action.payload.image;
+                    }
+                }
+            })
+        },
+
         local_deletePost: (state, action: PayloadAction<IDeletePostRequest>) => {
             state.myPageData.userPosts.forEach((post: IPost, index) => {
                 if (post.id === action.payload.postId) {
@@ -110,8 +121,28 @@ export const authSlice = createSlice({
             })
         },
 
-        local_likePost: (state, action: PayloadAction<IPost>) => {
+        local_likePost: (state, action: PayloadAction<number>) => {
+            state.myPageData.userPosts.forEach((post: IPost) => {
+                if (post.id === action.payload) post.likesCount!++;
+            })
+        },
 
+        local_unlikePost: (state, action: PayloadAction<number>) => {
+            state.myPageData.userPosts.forEach((post: IPost) => {
+                if (post.id === action.payload) post.likesCount!--;
+            })
+        },
+
+        local_likePost_another: (state, action: PayloadAction<number>) => {
+            state.anotherPageData.userPosts.forEach((post: IPost) => {
+                if (post.id === action.payload) post.likesCount!++;
+            })
+        },
+
+        local_unlikePost_another: (state, action: PayloadAction<number>) => {
+            state.anotherPageData.userPosts.forEach((post: IPost) => {
+                if (post.id === action.payload) post.likesCount!--;
+            })
         },
 
         local_updateAvatar: (state, action: PayloadAction<{img: string, userId: number}>) => {
@@ -187,6 +218,18 @@ export const authSlice = createSlice({
             }
         },
 
+        local_subscribe: (state, action: PayloadAction<IShortUser>) => {
+            state.mySubscribers.push(action.payload);
+            if (state.myPageData.subscribersCount) {
+                state.myPageData.subscribersCount++;
+            }
+
+            state.anotherSubscribers.push(action.payload);
+            if (state.anotherPageData.subscribersCount) {
+                state.anotherPageData.subscribersCount++
+            }
+        },
+
 
         resetProfile: () => initialState
     }
@@ -207,8 +250,8 @@ export const {
     clearAnotherUser,
     local_createPostComment,
     setMyThumbnail,
-    local_deletePost,
-    local_updateAvatar
+    local_deletePost, local_unlikePost_another, local_likePost_another,
+    local_updateAvatar, local_editPost, local_likePost, local_unlikePost, local_subscribe
 } = authSlice.actions;
 
 export default authSlice.reducer;

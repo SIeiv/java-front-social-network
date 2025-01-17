@@ -96,7 +96,7 @@ const Friends: FC<IFriendsProps> = ({type, category}) => {
                 </div>
             </div>
 
-            <div className={"flex flex-col gap-3"}>
+            <div className={"flex flex-col gap-3 sticky top-[96px] h-[164px]"}>
                 <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col p-3 gap-1"}>
                     <NavLink to={navPathController("friends")} className={({isActive,}) =>
                         isActive ? "bg-accent rounded-md" : ""}>

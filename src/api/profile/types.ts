@@ -14,6 +14,14 @@ export interface IUpdateAvatarRequest {
     picture: File
 }
 
+export interface ISubscribeRequest {
+    profileId: number,
+}
+
+export interface ISearchRequest {
+    search: string,
+}
+
 export type IGetUserSubscribersResponse = IShortUser[];
 export type IGetUserFriendsResponse = IShortUser[];
 export type IGetUserSubscriptionsResponse = IShortUser[];

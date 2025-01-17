@@ -9,9 +9,9 @@ import {
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {FC, useEffect, useRef, useState} from "react";
-import {ICreatePostRequest} from "@/api/posts/types.ts";
+import {ICreatePostRequest, IEditPostRequest} from "@/api/posts/types.ts";
 import {IPost} from "@/types.ts";
-import {createPostAC} from "@/store/profile/actionCreators.ts";
+import {createPostAC, editPostAC} from "@/store/profile/actionCreators.ts";
 import {useAppDispatch} from "@/hooks.ts";
 import {Input} from "@/components/ui/input.tsx";
 
@@ -20,12 +20,15 @@ interface IFormPost {
     setState: (state: boolean) => void;
     profileId: number | null;
     thumbnail: string | null;
+    type: "add" | "edit";
+    prevPostContent?: string | null;
+    postId?: number | null;
 }
 
-const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail}) => {
+const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail, type, prevPostContent, postId}) => {
     const dispatch = useAppDispatch();
 
-    const [postContent, setPostContent] = useState("");
+    const [postContent, setPostContent] = useState(prevPostContent ? prevPostContent : "");
     const imageInputRef = useRef<HTMLInputElement>(null);
     const [imageBase64, setImageBase64] = useState("");
 
@@ -55,6 +58,18 @@ const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail}) => {
         setPostContent("");
     }
 
+    const handleEditPostSubmit = () => {
+        const data: IEditPostRequest = {
+            image: imageBase64 === "" ? null : imageBase64,
+            profileId: profileId!,
+            content: postContent,
+            postId: postId!
+        }
+
+        dispatch(editPostAC(data));
+        setState(false);
+    }
+
     const onImageInputChange = () => {
         const reader = new FileReader();
         reader.readAsDataURL(imageInputRef.current!.files![0]);
@@ -72,7 +87,7 @@ const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail}) => {
             }}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Создать пост</DialogTitle>
+                        <DialogTitle>{type === "add" ? "Создать" : "Изменить"} пост</DialogTitle>
                         <DialogDescription>
                             <div className={"flex flex-col gap-3 mt-3"}>
                                 <Input type={"file"} ref={imageInputRef} onChange={onImageInputChange}/>
@@ -85,7 +100,10 @@ const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail}) => {
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button onClick={handleCreatePostSubmit}>Создать</Button>
+                        {type === "add"
+                            ? <Button onClick={handleCreatePostSubmit}>Создать</Button>
+                            : <Button onClick={handleEditPostSubmit}>Изменить</Button>
+                        }
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

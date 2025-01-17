@@ -36,6 +36,10 @@ export const feedSlice = createSlice({
                 })
             })
 
+            action.payload.profiles.forEach((profile) => {
+                profile.thumbnail = `data:image/png;base64,${profile.thumbnail}`;
+            })
+
             state.recommended = {...action.payload};
         },
 
@@ -58,12 +62,38 @@ export const feedSlice = createSlice({
             })
         },
 
+        local_likePost_feed: (state, action: PayloadAction<number>) => {
+            state.feed.forEach((post: IPost) => {
+                if (post.id === action.payload) post.likesCount!++;
+            })
+        },
+
+        local_unlikePost_feed: (state, action: PayloadAction<number>) => {
+            state.feed.forEach((post: IPost) => {
+                if (post.id === action.payload) post.likesCount!--;
+            })
+        },
+
+        local_likePost_recommended: (state, action: PayloadAction<number>) => {
+            state.recommended.posts.forEach((post: IPost) => {
+                if (post.id === action.payload) post.likesCount!++;
+            })
+        },
+
+        local_unlikePost_recommended: (state, action: PayloadAction<number>) => {
+            state.recommended.posts.forEach((post: IPost) => {
+                if (post.id === action.payload) post.likesCount!--;
+            })
+        },
+
         resetFeed: () => initialState
     }
 })
 
 export const {
-    resetFeed, setFeed, setRecommended, local_createFeedPostComment, local_createRecommendationPostComment
+    resetFeed, setFeed, setRecommended,
+    local_createFeedPostComment, local_createRecommendationPostComment,
+    local_unlikePost_feed, local_likePost_feed, local_likePost_recommended, local_unlikePost_recommended
 } = feedSlice.actions;
 
 export default feedSlice.reducer;

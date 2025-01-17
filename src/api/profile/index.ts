@@ -5,10 +5,11 @@ import {
     IFillProfileRequest,
     IGetUserFriendsResponse,
     IGetUserSubscribersResponse,
-    IGetUserSubscriptionsResponse,
+    IGetUserSubscriptionsResponse, ISearchRequest, ISubscribeRequest,
     IUpdateAvatarRequest,
 } from "@/api/profile/types.ts";
-import {IUserPage} from "@/types.ts";
+import {IShortUser, IUserPage} from "@/types.ts";
+import {IDeletePostRequest} from "@/api/posts/types.ts";
 
 export const fillProfile = (params: IFillProfileRequest): AxiosPromise<string> =>
     axiosInstance.post(endpoints.PROFILE.FILL_PROFILE, params, {
@@ -41,3 +42,21 @@ export const getUserFriends = (username: string): AxiosPromise<IGetUserFriendsRe
 
 export const getUserSubscriptions = (username: string): AxiosPromise<IGetUserSubscriptionsResponse> =>
     axiosInstance.get(BASE_URL + `/user/${username}/get-subscriptions`);
+
+export const subscribe = (params: ISubscribeRequest): AxiosPromise<string> =>
+    axiosInstance.post(endpoints.SUBSCRIPTIONS, params, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    });
+
+export const unsubscribe = (params: ISubscribeRequest): AxiosPromise<string> =>
+    axiosInstance.delete(endpoints.POSTS.DELETE_POST, {data: params});
+
+
+export const search = (params: ISearchRequest): AxiosPromise<IShortUser[]> =>
+    axiosInstance.post(endpoints.PROFILE.SEARCH_PROFILES, params, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    });
