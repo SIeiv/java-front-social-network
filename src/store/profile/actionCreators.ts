@@ -9,10 +9,10 @@ import {
     editProfile,
     local_createPost,
     local_createPostComment,
-    local_deletePost,
-    local_editPost,
+    local_deletePost, local_deletePostComment,
+    local_editPost, local_editPostComment,
     local_likePost, local_likePost_another, local_subscribe,
-    local_unlikePost, local_unlikePost_another,
+    local_unlikePost, local_unlikePost_another, local_unsubscribe,
     local_updateAvatar,
     setAnotherFriends,
     setAnotherPageData,
@@ -34,7 +34,13 @@ import {IComment, IPost, IShortUser} from "@/types.ts";
 import {
     local_createFeedPostComment,
     local_createRecommendationPostComment,
-    local_likePost_feed, local_likePost_recommended, local_unlikePost_feed, local_unlikePost_recommended
+    local_deleteFeedPostComment, local_deletePost_feed, local_deletePost_recommended,
+    local_deleteRecommendationPostComment,
+    local_editFeedPostComment, local_editPost_feed, local_editPost_recommended, local_editRecommendationPostComment,
+    local_likePost_feed,
+    local_likePost_recommended,
+    local_unlikePost_feed,
+    local_unlikePost_recommended
 } from "@/store/feed/feed.slice.ts";
 
 
@@ -174,11 +180,17 @@ export const createPostAC = (data: ICreatePostRequest, data2: IPost) => async (d
     }
 }
 
-export const editPostAC = (data: IEditPostRequest) => async (dispatch: Dispatch) => {
+export const editPostAC = (data: IEditPostRequest, place: string) => async (dispatch: Dispatch) => {
     try {
-        const response = await api.posts.editPost({...data,
-            image: data.image && data.image.replace("data:image/jpeg;base64,", "") });
-        dispatch(local_editPost(data));
+        await api.posts.editPost({...data, image: data.image && data.image.replace("data:image/jpeg;base64,", "") });
+
+        if (place === "myPage" || place === "anotherPage") {
+            dispatch(local_editPost({postData: data, place}));
+        } else if (place === "feed") {
+            dispatch(local_editPost_feed(data));
+        } else if (place === "recommended") {
+            dispatch(local_editPost_recommended(data));
+        }
     } catch (error: any) {
         console.error(error);
     }
@@ -195,7 +207,7 @@ export const updateAvatarAC = (data: FileList, img: string, userId: number) => a
     }
 }
 
-export const deletePostAC = (data: IPost) => async (dispatch: Dispatch) => {
+export const deletePostAC = (data: IPost, place: string) => async (dispatch: Dispatch) => {
     try {
         const request: IDeletePostRequest = {
             postId: data.id!,
@@ -203,7 +215,15 @@ export const deletePostAC = (data: IPost) => async (dispatch: Dispatch) => {
         }
 
         await api.posts.deletePost(request);
-        dispatch(local_deletePost(request));
+
+
+        if (place === "myPage" || place === "anotherPage") {
+            dispatch(local_deletePost({request, place}));
+        } else if (place === "feed") {
+            dispatch(local_deletePost_feed(request));
+        } else if (place === "recommended") {
+            dispatch(local_deletePost_recommended(request));
+        }
     } catch (error: any) {
         console.error(error);
     }
@@ -247,24 +267,70 @@ export const unlikePostAC = (postId: number, place: string) => async (dispatch: 
 
 export const createPostCommentAC = (data1: IComment, data2: ICreatePostCommentRequest, place: string) => async (dispatch: Dispatch) => {
     try {
-        await api.posts.createPostComment(data2);
+        const response = await api.posts.createPostComment(data2);
+
+        let finallyData: IComment = {
+            ...data1,
+            id: response.data
+        }
 
         if (place === "myPage" || place === "anotherPage") {
-            dispatch(local_createPostComment({comment: data1, postId: data2.postId!, place}));
+            dispatch(local_createPostComment({comment: finallyData, postId: data2.postId!, place}));
         } else if (place === "feed") {
-            dispatch(local_createFeedPostComment({comment: data1, postId: data2.postId!}));
+            dispatch(local_createFeedPostComment({comment: finallyData, postId: data2.postId!}));
         } else if (place === "recommended") {
-            dispatch(local_createRecommendationPostComment({comment: data1, postId: data2.postId!}));
+            dispatch(local_createRecommendationPostComment({comment: finallyData, postId: data2.postId!}));
         }
     } catch (error: any) {
         console.error(error);
     }
 }
 
-export const subscribeAC = (data: IShortUser) => async (dispatch: Dispatch) => {
+export const editPostCommentAC = (data1: IComment, postId: number, place: string) => async (dispatch: Dispatch) => {
     try {
-        dispatch(local_subscribe(data))
-        await api.profile.subscribe({profileId: data.profileId});
+        await api.posts.editPostComment({commentId: data1.id, content: data1.content});
+
+        if (place === "myPage" || place === "anotherPage") {
+            dispatch(local_editPostComment({comment: data1, postId: postId!, place}));
+        } else if (place === "feed") {
+            dispatch(local_editFeedPostComment({comment: data1, postId: postId!}));
+        } else if (place === "recommended") {
+            dispatch(local_editRecommendationPostComment({comment: data1, postId: postId!}));
+        }
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const deletePostCommentAC = (data1: IComment, postId: number, place: string) => async (dispatch: Dispatch) => {
+    try {
+        await api.posts.deletePostComment({commentId: data1.id});
+
+        if (place === "myPage" || place === "anotherPage") {
+            dispatch(local_deletePostComment({comment: data1, postId: postId!, place}));
+        } else if (place === "feed") {
+            dispatch(local_deleteFeedPostComment({comment: data1, postId: postId!}));
+        } else if (place === "recommended") {
+            dispatch(local_deleteRecommendationPostComment({comment: data1, postId: postId!}));
+        }
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const subscribeAC = (currentUser: IShortUser, anotherUser: IShortUser) => async (dispatch: Dispatch) => {
+    try {
+        await api.profile.subscribe({profileId: anotherUser.profileId});
+        dispatch(local_subscribe({currentUser, anotherUser}));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const unsubscribeAC = (currentUser: IShortUser, anotherUser: IShortUser) => async (dispatch: Dispatch) => {
+    try {
+        await api.profile.unsubscribe({profileId: anotherUser.profileId});
+        dispatch(local_unsubscribe({currentUser, anotherUser}));
     } catch (error: any) {
         console.error(error);
     }

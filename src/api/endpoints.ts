@@ -17,9 +17,12 @@ const endpoints = {
     },
     POSTS: {
         CREATE_POST: BASE_URL + "/posts/create",
-        CREATE_POST_COMMENT: BASE_URL + "/comments/create",
         DELETE_POST: BASE_URL + "/posts/delete",
         EDIT_POST: BASE_URL + "/posts/edit",
+
+        CREATE_POST_COMMENT: BASE_URL + "/comments/create",
+        EDIT_POST_COMMENT: BASE_URL + "/comments/edit",
+        DELETE_POST_COMMENT: BASE_URL + "/comments/delete",
     },
     FEED: {
         GET_FEED: BASE_URL + "/feed/main",

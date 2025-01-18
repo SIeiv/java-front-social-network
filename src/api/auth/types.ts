@@ -15,6 +15,7 @@ export interface IDetailsResponse {
     "shortname": string,
     "firstname": string,
     "lastname": string,
+    role: string,
     "email": string,
     "profileId": number,
     verified: boolean,

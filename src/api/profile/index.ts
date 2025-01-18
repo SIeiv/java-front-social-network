@@ -51,7 +51,7 @@ export const subscribe = (params: ISubscribeRequest): AxiosPromise<string> =>
     });
 
 export const unsubscribe = (params: ISubscribeRequest): AxiosPromise<string> =>
-    axiosInstance.delete(endpoints.POSTS.DELETE_POST, {data: params});
+    axiosInstance.delete(endpoints.SUBSCRIPTIONS, {data: params, headers: {"Content-Type": "multipart/form-data"}});
 
 
 export const search = (params: ISearchRequest): AxiosPromise<IShortUser[]> =>

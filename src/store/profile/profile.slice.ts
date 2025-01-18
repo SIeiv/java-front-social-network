@@ -102,23 +102,43 @@ export const authSlice = createSlice({
             state.myPageData.userPosts.push(finallyPost);
         },
 
-        local_editPost: (state, action: PayloadAction<IEditPostRequest>) => {
-            state.myPageData.userPosts.forEach((post: IPost) => {
-                if (post.id === action.payload.postId && post.profileId === action.payload.profileId) {
-                    post.content = action.payload.content;
-                    if (post.image) {
-                        post.image = action.payload.image;
+        local_editPost: (state, action: PayloadAction<{postData: IEditPostRequest, place: string}>) => {
+            if (action.payload.place === "myPage") {
+                state.myPageData.userPosts.forEach((post: IPost) => {
+                    if (post.id === action.payload.postData.postId && post.profileId === action.payload.postData.profileId) {
+                        post.content = action.payload.postData.content;
+                        if (post.image) {
+                            post.image = action.payload.postData.image;
+                        }
                     }
-                }
-            })
+                })
+            } else {
+                state.anotherPageData.userPosts.forEach((post: IPost) => {
+                    if (post.id === action.payload.postData.postId && post.profileId === action.payload.postData.profileId) {
+                        post.content = action.payload.postData.content;
+                        if (post.image) {
+                            post.image = action.payload.postData.image;
+                        }
+                    }
+                })
+            }
         },
 
-        local_deletePost: (state, action: PayloadAction<IDeletePostRequest>) => {
-            state.myPageData.userPosts.forEach((post: IPost, index) => {
-                if (post.id === action.payload.postId) {
-                    state.myPageData.userPosts.splice(index, 1);
-                }
-            })
+        local_deletePost: (state,
+                           action: PayloadAction<{request: IDeletePostRequest, place: string}>) => {
+            if (action.payload.place === "myPage") {
+                state.myPageData.userPosts.forEach((post: IPost, index) => {
+                    if (post.id === action.payload.request.postId) {
+                        state.myPageData.userPosts.splice(index, 1);
+                    }
+                })
+            } else {
+                state.anotherPageData.userPosts.forEach((post: IPost, index) => {
+                    if (post.id === action.payload.request.postId) {
+                        state.anotherPageData.userPosts.splice(index, 1);
+                    }
+                })
+            }
         },
 
         local_likePost: (state, action: PayloadAction<number>) => {
@@ -218,16 +238,149 @@ export const authSlice = createSlice({
             }
         },
 
-        local_subscribe: (state, action: PayloadAction<IShortUser>) => {
-            state.mySubscribers.push(action.payload);
-            if (state.myPageData.subscribersCount) {
-                state.myPageData.subscribersCount++;
+        local_editPostComment: (state, action: PayloadAction<{comment: IComment, postId: number, place: string }>) => {
+            if (action.payload.place === "myPage") {
+                state.myPageData.userPosts.forEach((post: IPost) => {
+                    if (post.id === action.payload.postId) {
+                        post.comments.forEach((comment: IComment) => {
+                            if (comment.id === action.payload.comment.id) {
+                                comment.content = action.payload.comment.content;
+                            }
+                        })
+                    }
+                })
+            } else if (action.payload.place === "anotherPage") {
+                state.anotherPageData.userPosts.forEach((post: IPost) => {
+                    if (post.id === action.payload.postId) {
+                        post.comments.forEach((comment: IComment) => {
+                            if (comment.id === action.payload.comment.id) {
+                                comment.content = action.payload.comment.content;
+                            }
+                        })
+                    }
+                })
+            }
+        },
+
+        local_deletePostComment: (state, action: PayloadAction<{comment: IComment, postId: number, place: string }>) => {
+            if (action.payload.place === "myPage") {
+                state.myPageData.userPosts.forEach((post: IPost) => {
+                    if (post.id === action.payload.postId) {
+                        post.commentsCount!--;
+                        post.comments.forEach((comment: IComment, index) => {
+                            if (comment.id === action.payload.comment.id) {
+                                post.comments.splice(index, 1);
+                            }
+                        })
+                    }
+                })
+            } else if (action.payload.place === "anotherPage") {
+                state.anotherPageData.userPosts.forEach((post: IPost) => {
+                    if (post.id === action.payload.postId) {
+                        post.commentsCount!--;
+                        post.comments.forEach((comment: IComment, index) => {
+                            if (comment.id === action.payload.comment.id) {
+                                post.comments.splice(index, 1);
+                            }
+                        })
+                    }
+                })
+            }
+        },
+
+        local_subscribe: (state, action: PayloadAction<{currentUser: IShortUser, anotherUser: IShortUser}>) => {
+            let isAnotherUserSubscribed = false;
+            for (let i = 0; i < state.anotherSubscriptions.length; i++) {
+                if (state.anotherSubscriptions[i].shortName === action.payload.currentUser.shortName) {
+                    isAnotherUserSubscribed = true;
+                    break;
+                }
             }
 
-            state.anotherSubscribers.push(action.payload);
-            if (state.anotherPageData.subscribersCount) {
-                state.anotherPageData.subscribersCount++
+            if (!isAnotherUserSubscribed) {
+                state.mySubscriptions.push(action.payload.anotherUser);
+                if (state.myPageData.subscriptionsCount) {
+                    state.myPageData.subscriptionsCount++;
+                }
+
+                state.anotherSubscribers.push(action.payload.currentUser);
+                if (state.anotherPageData.subscribersCount) {
+                    state.anotherPageData.subscribersCount++
+                }
+            } else {
+                state.myFriends.push(action.payload.anotherUser);
+                if (state.myPageData.friendsCount) {
+                    state.myPageData.friendsCount++;
+                }
+                state.mySubscribers.forEach((subscriber, index) => {
+                    if (subscriber.shortName === action.payload.anotherUser.shortName) {
+                        state.mySubscribers.splice(index, 1);
+                    }
+                })
+
+                state.anotherFriends.push(action.payload.currentUser);
+                if (state.anotherPageData.friendsCount) {
+                    state.anotherPageData.friendsCount++
+                }
+                state.anotherSubscriptions.forEach((subscription, index) => {
+                    if (subscription.shortName === action.payload.currentUser.shortName) {
+                        state.anotherSubscriptions.splice(index, 1);
+                    }
+                })
             }
+
+        },
+
+        local_unsubscribe: (state, action: PayloadAction<{currentUser: IShortUser, anotherUser: IShortUser}>) => {
+            let isAnotherUserSubscribed = false;
+            for (let i = 0; i < state.anotherSubscriptions.length; i++) {
+                if (state.anotherSubscriptions[i].shortName === action.payload.currentUser.shortName) {
+                    isAnotherUserSubscribed = true;
+                    break;
+                }
+            }
+
+            if (!isAnotherUserSubscribed) {
+                state.mySubscriptions.forEach((subscription, index) => {
+                    if (subscription.shortName === action.payload.anotherUser.shortName) {
+                        state.mySubscriptions.splice(index, 1);
+                    }
+                })
+                if (state.myPageData.subscriptionsCount) {
+                    state.myPageData.subscriptionsCount--;
+                }
+
+                state.anotherSubscribers.push(action.payload.currentUser);
+                state.anotherSubscribers.forEach((subscriber, index) => {
+                    if (subscriber.shortName === action.payload.currentUser.shortName) {
+                        state.anotherSubscribers.splice(index, 1);
+                    }
+                })
+                if (state.anotherPageData.subscribersCount) {
+                    state.anotherPageData.subscribersCount--;
+                }
+            } else {
+                state.myFriends.forEach((friend, index) => {
+                    if (friend.shortName === action.payload.anotherUser.shortName) {
+                        state.myFriends.splice(index, 1);
+                    }
+                })
+                if (state.myPageData.friendsCount) {
+                    state.myPageData.friendsCount--;
+                }
+                state.mySubscribers.push(action.payload.anotherUser);
+
+                state.anotherFriends.forEach((friend, index) => {
+                    if (friend.shortName === action.payload.currentUser.shortName) {
+                        state.anotherFriends.splice(index, 1);
+                    }
+                })
+                if (state.anotherPageData.friendsCount) {
+                    state.anotherPageData.friendsCount--
+                }
+                state.anotherSubscriptions.push(action.payload.currentUser);
+            }
+
         },
 
 
@@ -247,9 +400,9 @@ export const {
     setAnotherSubscriptions,
     setAnotherSubscribers,
     setAnotherFriends,
-    clearAnotherUser,
-    local_createPostComment,
-    setMyThumbnail,
+    clearAnotherUser, local_unsubscribe,
+    local_createPostComment, local_deletePostComment,
+    setMyThumbnail, local_editPostComment,
     local_deletePost, local_unlikePost_another, local_likePost_another,
     local_updateAvatar, local_editPost, local_likePost, local_unlikePost, local_subscribe
 } = authSlice.actions;

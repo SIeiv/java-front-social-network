@@ -3,8 +3,8 @@ import {AxiosPromise} from "axios";
 import endpoints, {BASE_URL} from "@/api/endpoints.ts";
 import {
     ICreatePostCommentRequest,
-    ICreatePostRequest,
-    IDeletePostRequest,
+    ICreatePostRequest, IDeletePostCommentRequest,
+    IDeletePostRequest, IEditPostCommentRequest,
     IEditPostRequest
 } from "@/api/posts/types.ts";
 
@@ -35,9 +35,19 @@ export const unlikePost = (postId: number): AxiosPromise<string> =>
 export const deletePost = (params: IDeletePostRequest): AxiosPromise<string> =>
     axiosInstance.delete(endpoints.POSTS.DELETE_POST, {data: params});
 
-export const createPostComment = (params: ICreatePostCommentRequest): AxiosPromise<string> =>
+export const createPostComment = (params: ICreatePostCommentRequest): AxiosPromise<number> =>
     axiosInstance.post(endpoints.POSTS.CREATE_POST_COMMENT, params, {
         headers: {
             "Content-Type": "application/json"
         }
     });
+
+export const editPostComment = (params: IEditPostCommentRequest): AxiosPromise<string> =>
+    axiosInstance.put(endpoints.POSTS.EDIT_POST_COMMENT, params, {
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+export const deletePostComment = (params: IDeletePostCommentRequest): AxiosPromise<string> =>
+    axiosInstance.delete(endpoints.POSTS.DELETE_POST_COMMENT, {data: params});

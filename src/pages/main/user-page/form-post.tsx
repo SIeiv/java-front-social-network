@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {FC, useEffect, useRef, useState} from "react";
+import {FC, useRef, useState} from "react";
 import {ICreatePostRequest, IEditPostRequest} from "@/api/posts/types.ts";
 import {IPost} from "@/types.ts";
 import {createPostAC, editPostAC} from "@/store/profile/actionCreators.ts";
@@ -23,10 +23,13 @@ interface IFormPost {
     type: "add" | "edit";
     prevPostContent?: string | null;
     postId?: number | null;
+    place: string;
 }
 
-const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail, type, prevPostContent, postId}) => {
+const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail, type, prevPostContent, postId, place}) => {
     const dispatch = useAppDispatch();
+
+    console.log("FormPost: ", place)
 
     const [postContent, setPostContent] = useState(prevPostContent ? prevPostContent : "");
     const imageInputRef = useRef<HTMLInputElement>(null);
@@ -66,7 +69,7 @@ const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail, type, p
             postId: postId!
         }
 
-        dispatch(editPostAC(data));
+        dispatch(editPostAC(data, place));
         setState(false);
     }
 

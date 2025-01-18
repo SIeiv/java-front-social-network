@@ -1,7 +1,6 @@
-import React, {FC} from 'react';
+import {FC} from 'react';
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
 import {Label} from "@/components/ui/label.tsx";
-import ShortNameLink from "@/new_components/shortNameLink.tsx";
 import {IShortUser} from "@/types.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {NavLink} from "react-router";

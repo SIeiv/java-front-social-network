@@ -32,7 +32,7 @@ const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type
     const myThumbnail = useAppSelector(state => state.profile.myThumbnail);
 
     const comments: ReactElement[] = postData.comments.map((comment: IComment) =>
-        <CommentItem key={comment.id} commentData={comment}/>
+        <CommentItem key={comment.id} commentData={comment} postId={postData.id} place={place}/>
     )
 
     const [isMinimized, setIsMinimized] = useState(true);
@@ -49,7 +49,7 @@ const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type
             username: currentUser.shortname,
             content: commentContent,
             image: myThumbnail ? myThumbnail : "",
-            authorId: 0,
+            authorId: currentUser.profileId,
             creationDate: new Date().toISOString(),
             firstName: currentUser.firstname,
             lastName: currentUser.lastname,
@@ -65,7 +65,7 @@ const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type
     }
 
     const handleDeletePost = () => {
-        dispatch(deletePostAC(postData));
+        dispatch(deletePostAC(postData, place));
     }
 
     useEffect(() => {
@@ -77,7 +77,9 @@ const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type
     return (
         <div className={"w-full"}>
             <FormPost state={editPostState} setState={setEditPostState} type={"edit"} postId={postData.id}
-                      profileId={postData.profileId} thumbnail={myThumbnail} prevPostContent={postData.content}/>
+                      profileId={postData.profileId} thumbnail={myThumbnail} prevPostContent={postData.content}
+                      place={place}
+            />
 
             <div className={"w-full flex flex-col gap-2"}>
                 <div className={"flex justify-between"}>
@@ -93,7 +95,7 @@ const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type
                         </div>
 
                     </div>
-                    {type === "my"
+                    {(type === "my" || currentUser.role === "ROLE_MODERATOR" || currentUser.role === "ROLE_ADMIN")
                         && <div>
                             <Button variant={"ghost"} className={"p-1 [&_svg]:size-5"} onClick={() => {setEditPostState(true)}}>
                                 <Pencil/>

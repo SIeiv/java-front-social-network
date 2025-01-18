@@ -92,34 +92,44 @@ const Header = () => {
                     </div>
                 </div>
                 {profile
-                    ? <DropdownMenu>
-                        <DropdownMenuTrigger>
-                        <Button variant={"ghost"} className={"h-15"}>
-                                {myThumbnail && <img src={myThumbnail} alt="" className={"w-10 h-10 rounded-full"}/>}
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel className={"flex items-center justify-center"}>
-                                <div className={"flex flex-col items-center justify-center gap-2"}>
-                                    {/*<Avatar className="w-16 h-16">
+                    ? <div className={"flex gap-3 items-center"}>
+                        {profile.role === "ROLE_MODERATOR"
+                            && <Label className={"bg-green-600 text-white px-2 py-1 rounded-md"}>Модератор</Label>}
+                        {profile.role === "ROLE_ADMIN"
+                            && <Label className={"bg-red-600 text-white p-2 py-1 rounded-md"}>Админ</Label>}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger>
+                                <Button variant={"ghost"} className={"h-15"}>
+                                    <Avatar className={""}>
+                                        <AvatarImage src={myThumbnail}/>
+                                        <AvatarFallback>{(profile.firstname && profile.lastname)
+                                            && profile.firstname[0] + profile.lastname[0]}</AvatarFallback>
+                                    </Avatar>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel className={"flex items-center justify-center"}>
+                                    <div className={"flex flex-col items-center justify-center gap-2"}>
+                                        {/*<Avatar className="w-16 h-16">
                                         <AvatarImage src={myThumbnail ? myThumbnail : ""} />
                                         <AvatarFallback>AV</AvatarFallback>
                                     </Avatar>*/}
-                                    <div className={"flex flex-col items-center justify-center"}>
-                                        <Label>{profile.firstname + " " + profile.lastname}</Label>
-                                        <Label className={"text-slate-500"}>{profile.email}</Label>
+                                        <div className={"flex flex-col items-center justify-center"}>
+                                            <Label>{profile.firstname + " " + profile.lastname}</Label>
+                                            <Label className={"text-slate-500"}>{profile.email}</Label>
+                                        </div>
+
                                     </div>
 
-                                </div>
-
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className={"cursor-pointer"} onClick={handleLogout}>
-                                <LogOut />
-                                Выйти
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className={"cursor-pointer"} onClick={handleLogout}>
+                                    <LogOut />
+                                    Выйти
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
 
                     :
                     <NavLink to={"/auth/login"}>

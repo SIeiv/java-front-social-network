@@ -5,10 +5,10 @@ import PostItem from "@/new_components/postItem.tsx";
 import {FC, ReactElement, useEffect, useRef, useState} from "react";
 import {
     fillProfile2AC,
-    getAnotherPageAC,
+    getAnotherPageAC, getMyFriendsAC,
     getMyPageAC,
     getMySubscriptionsAC,
-    subscribeAC
+    subscribeAC, unsubscribeAC
 } from "@/store/profile/actionCreators.ts";
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
 import {IPost, IShortUser, IUserPage} from "@/types.ts";
@@ -28,6 +28,7 @@ import {useLocation} from "react-router";
 import ShortNameLink from "@/new_components/shortNameLink.tsx";
 import FormPost from "@/pages/main/user-page/form-post.tsx";
 import FormAvatar from "@/pages/main/user-page/form-avatar.tsx";
+import {IDetailsResponse} from "@/api/auth/types.ts";
 
 interface IUserPageProps {
     type: "my" | "another"
@@ -47,8 +48,10 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const itemsCount = 4;
 
     const myThumbnail = useAppSelector(state => state.profile.myThumbnail);
-    const details = useAppSelector(state => state.auth.appInitializeData.initialUserData)
+    const details: IDetailsResponse = useAppSelector(state => state.auth.appInitializeData.initialUserData);
+
     const fullMySubscriptions =  useAppSelector(state => state.profile.mySubscriptions);
+    const fullMyFriends =  useAppSelector(state => state.profile.myFriends);
 
     if (type === "my") {
         myPageData = useAppSelector(state => state.profile.myPageData);
@@ -93,7 +96,8 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
             if (!myPageData.shortName) dispatch(getMyPageAC());
         } else {
             dispatch(getAnotherPageAC());
-            if (fullMySubscriptions.length === 0) dispatch(getMySubscriptionsAC(details!.shortname))
+            if (fullMySubscriptions.length === 0) dispatch(getMySubscriptionsAC(details!.shortname));
+            if (fullMyFriends.length === 0) dispatch(getMyFriendsAC(details!.shortname));
         }
     }, [type, pathname]);
 
@@ -105,9 +109,15 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                     break;
                 }
             }
+            for (let i = 0; i < fullMyFriends.length; i++) {
+                if (fullMyFriends[i].shortName === myPageData.shortName) {
+                    setIsSubscribed(true);
+                    break;
+                }
+            }
         }
 
-    }, [fullMySubscriptions, pathname, myPageData]);
+    }, [fullMySubscriptions, fullMyFriends, pathname, myPageData]);
 
     const posts: ReactElement[] = myPageData.userPosts.map((post: IPost) =>
         <PostItem type={type} firstName={myPageData.firstName} lastName={myPageData.lastName}
@@ -140,16 +150,28 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
         setEditProfileState(false);
     }
 
-    const handleSubscribe = () => {
-        const data: IShortUser = {
-            shortName: myPageData.shortName!,
-            profileId: myPageData.profileId!,
-            lastName: myPageData.lastName!,
-            firstName: myPageData.firstName!,
-            thumbnail: myPageData.image!
-        }
+    const currentUser: IShortUser = {
+        shortName: details.shortname,
+        profileId: details.profileId!,
+        lastName: details.lastname!,
+        firstName: details.firstname!,
+        thumbnail: myThumbnail!
+    };
 
-        dispatch(subscribeAC(data))
+    const anotherUser: IShortUser = {
+        shortName: myPageData.shortName!,
+        profileId: myPageData.profileId!,
+        lastName: myPageData.lastName!,
+        firstName: myPageData.firstName!,
+        thumbnail: myPageData.image!
+    };
+
+    const handleSubscribe = () => {
+        dispatch(subscribeAC(currentUser, anotherUser));
+    }
+
+    const handleUnsubscribe = () => {
+        dispatch(unsubscribeAC(currentUser, anotherUser));
     }
 
     let options = {
@@ -229,7 +251,7 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
             </Dialog>
 
             <FormPost state={createPostState} setState={setCreatePostState} type={"add"}
-                      profileId={myPageData.profileId} thumbnail={myThumbnail}/>
+                      profileId={myPageData.profileId} thumbnail={myThumbnail} place={type === "my" ? "myPage" : "anotherPage"}/>
 
             <Dialog open={imagePreviewState} onOpenChange={() => setImagePreviewState(false)}>
                 <DialogContent className={`p-0 max-h-[80vh]`}>
@@ -276,7 +298,7 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                             </div>
                             : <div className={"flex gap-1.5"}>
                                 {isSubscribed
-                                    ? <Button variant={"ghost"}>Отписаться</Button>
+                                    ? <Button onClick={handleUnsubscribe} variant={"ghost"}>Отписаться</Button>
                                     : <Button onClick={handleSubscribe}>Подписаться</Button>}
                             </div>
                         }

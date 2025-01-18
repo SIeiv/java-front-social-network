@@ -5,11 +5,6 @@ export interface ICreatePostRequest {
     "image": string | null
 }
 
-export interface ICreatePostCommentRequest {
-    content: string | null,
-    postId: number | null,
-}
-
 export interface IDeletePostRequest {
     "profileId": number,
     "postId": number
@@ -21,3 +16,18 @@ export interface IEditPostRequest {
     "postId": number,
     "image": string | null
 }
+
+export interface ICreatePostCommentRequest {
+    content: string | null,
+    postId: number | null,
+}
+
+export interface IEditPostCommentRequest {
+    commentId: number | null,
+    content: string | null,
+}
+
+export interface IDeletePostCommentRequest {
+    commentId: number | null,
+}
+
