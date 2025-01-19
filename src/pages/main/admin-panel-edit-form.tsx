@@ -32,7 +32,8 @@ const AdminPanelEditForm: FC<Props> = ({state, setState, type, user}) => {
             username,
             password,
             email,
-            role: editRole
+            role: editRole,
+            id: user!.id
         }
         return data;
     }

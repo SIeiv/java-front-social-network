@@ -26,7 +26,7 @@ export const adminSlice = createSlice({
 
         local_fillUser: (state, action: PayloadAction<IFillUserRequest>) => {
             state.users.forEach((user: IDetailsResponse) => {
-                if (user.id === action.payload.id) {
+                if (user.profileId === action.payload.id) {
                     user.firstname = action.payload.firstName;
                     user.lastname = action.payload.lastName;
                     user.shortname = action.payload.shortName;
@@ -46,12 +46,20 @@ export const adminSlice = createSlice({
             state.users.push(user);
         },
 
+        local_deleteUser: (state, action: PayloadAction<number>) => {
+            state.users.forEach((user: IDetailsResponse, index) => {
+                if (user.id === action.payload) {
+                    state.users.splice(index, 1);
+                }
+            })
+        },
+
         resetAdmin: () => initialState
     }
 })
 
 export const {
-    resetAdmin, setUsers, local_editUser, local_addUser, local_fillUser
+    resetAdmin, setUsers, local_editUser, local_addUser, local_fillUser, local_deleteUser
 } = adminSlice.actions;
 
 export default adminSlice.reducer;

@@ -37,7 +37,7 @@ const initialState = {
     appInitializeData: {
         initialized: false,
         initialUserData: 1 as number | null | IDetailsResponse,
-        isLoading: false as boolean,
+        isLoading: true as boolean,
         error: null as null | string
     }
 }

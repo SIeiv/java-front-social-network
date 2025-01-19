@@ -6,14 +6,22 @@ import {Paperclip, PencilLine, SquareArrowOutUpRight, Trash2} from "lucide-react
 import AdminPanelEditForm from "@/pages/main/admin-panel-edit-form.tsx";
 import {NavLink} from "react-router";
 import FormFillUser from "@/pages/main/form-fill-user.tsx";
+import {useAppDispatch} from "@/hooks.ts";
+import {admin_deleteUserAC} from "@/store/admin/actionCreators.ts";
 
 interface IAdminPanelItem {
     user: IDetailsResponse
 }
 
 const AdminPanelItem: FC<IAdminPanelItem> = ({user}) => {
+    const dispatch = useAppDispatch();
+
     const [editUserState, setEditUserState] = useState(false);
     const [fillUserState, setFillUserState] = useState(false);
+
+    const handleDeleteUser = () => {
+        dispatch(admin_deleteUserAC(user.id));
+    }
 
     return (
         <div>
@@ -55,7 +63,7 @@ const AdminPanelItem: FC<IAdminPanelItem> = ({user}) => {
                         <Button variant={"secondary"} onClick={() => {setFillUserState(true)}}>
                             <Paperclip />
                         </Button>
-                        <Button variant={"secondary"}>
+                        <Button variant={"secondary"} onClick={handleDeleteUser}>
                             <Trash2/>
                         </Button>
                     </div>

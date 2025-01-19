@@ -34,6 +34,7 @@ const endpoints = {
         EDIT_USER: BASE_URL + "/admin/edit-user",
         ADD_USER: BASE_URL + "/admin/signup",
         VERIFY_USER: BASE_URL + "/admin/fill-profile",
+        DELETE_USER: BASE_URL + "/admin/delete-user",
     }
 }
 

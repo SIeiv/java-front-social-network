@@ -8,20 +8,30 @@ import RouterFriends from "@/pages/main/router-friends.tsx";
 import {useAppSelector} from "@/hooks.ts";
 import Search from "@/pages/main/search.tsx";
 import AdminPanel from "@/pages/main/admin-panel.tsx";
+import {IDetailsResponse} from "@/api/auth/types.ts";
 
 
 const Main = () => {
     const navigate = useNavigate();
 
     const profile = useAppSelector(state => state.auth.appInitializeData.initialUserData);
+    const initializeState = useAppSelector(state => state.auth.appInitializeData.isLoading);
 
     /*const appIsInit = useAppSelector(state => state.auth.appInitializeData.initialized);*/
 
     useEffect(() => {
-        if (!profile) {
+        console.log("Обновление мейна!")
+        console.log("initial state", initializeState);
+        console.log("profile", profile);
+
+        if (!profile && !initializeState) {
             navigate("/auth/login");
         }
-    }, [profile])
+
+        if ((profile && !profile.verified) && !initializeState) {
+            navigate("/fill-profile");
+        }
+    }, [profile, initializeState]);
 
     return (
         <div className={"bg-slate-50"}>

@@ -121,28 +121,34 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
         <ShortUserItem data={subscription}/>
     );
 
-    const currentUser: IShortUser = {
-        shortName: details.shortname,
-        profileId: details.profileId!,
-        lastName: details.lastname!,
-        firstName: details.firstname!,
-        thumbnail: myThumbnail!
-    };
+    const formData = () => {
+        const currentUser: IShortUser = {
+            shortName: details.shortname,
+            profileId: details.profileId!,
+            lastName: details.lastname!,
+            firstName: details.firstname!,
+            thumbnail: myThumbnail!
+        };
 
-    const anotherUser: IShortUser = {
-        shortName: myPageData.shortName!,
-        profileId: myPageData.profileId!,
-        lastName: myPageData.lastName!,
-        firstName: myPageData.firstName!,
-        thumbnail: myPageData.image!
-    };
+        const anotherUser: IShortUser = {
+            shortName: myPageData.shortName!,
+            profileId: myPageData.profileId!,
+            lastName: myPageData.lastName!,
+            firstName: myPageData.firstName!,
+            thumbnail: myPageData.image!
+        };
+
+        return {currentUser, anotherUser}
+    }
 
     const handleSubscribe = () => {
-        dispatch(subscribeAC(currentUser, anotherUser));
+        const data = formData();
+        dispatch(subscribeAC(data.currentUser, data.anotherUser));
     }
 
     const handleUnsubscribe = () => {
-        dispatch(unsubscribeAC(currentUser, anotherUser));
+        const data = formData();
+        dispatch(unsubscribeAC(data.currentUser, data.anotherUser));
     }
 
     let options = {

@@ -65,7 +65,7 @@ const Header = () => {
             <div className={"w-[1248px] h-full m-auto flex items-center justify-between"}>
                 <div className={"flex gap-4"}>
                     <div className={"w-[200px]"}>
-                        <NavLink to={"/"}>
+                        <NavLink to={"/my-page"}>
                             <img src={logo} alt=""/>
                         </NavLink>
                     </div>

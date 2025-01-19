@@ -50,7 +50,7 @@ export const fillProfileAC = (data: IFillProfileRequest) => async (dispatch: Dis
 
         if (response.status === 200) {
             dispatch(setUserVerified(true));
-            window.location.href = "/";
+            window.location.href = "/my-page";
         }
 
     } catch (error: any) {

@@ -1,6 +1,6 @@
 import {Dispatch} from "@reduxjs/toolkit";
 import api from "@/api";
-import {local_addUser, local_editUser, local_fillUser, setUsers} from "@/store/admin/admin.slice.ts";
+import {local_addUser, local_deleteUser, local_editUser, local_fillUser, setUsers} from "@/store/admin/admin.slice.ts";
 import {IEditUserRequest, IFillUserRequest} from "@/api/admin/types.ts";
 
 export const admin_getUsersAC = () => async (dispatch: Dispatch) => {
@@ -34,6 +34,15 @@ export const admin_fillUserAC = (data: IFillUserRequest) => async (dispatch: Dis
     try {
         await api.admin.fillUser(data)
         dispatch(local_fillUser(data));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const admin_deleteUserAC = (id: number) => async (dispatch: Dispatch) => {
+    try {
+        await api.admin.deleteUser({id});
+        dispatch(local_deleteUser(id));
     } catch (error: any) {
         console.error(error);
     }

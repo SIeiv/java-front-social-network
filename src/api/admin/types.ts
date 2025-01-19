@@ -5,6 +5,7 @@ export type IGetUsersResponse = IDetailsResponse[];
 
 export interface IEditUserRequest extends IRegisterRequest {
     role: UserRolesType;
+    id: number;
 }
 
 export interface IAddUserResponse {
@@ -26,4 +27,8 @@ export interface IFillUserRequest {
     "shortName": string,
     "birthDate": string,
     "gender": string
+}
+
+export interface IDeleteUserRequest {
+    id: number
 }
