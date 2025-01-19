@@ -6,6 +6,7 @@ import logger from "redux-logger";
 import profileReducer from "./profile/profile.slice.ts";
 import feedReducer from "./feed/feed.slice.ts";
 import searchReducer from "./search/search.slice.ts";
+import adminReducer from "./admin/admin.slice.ts";
 
 export const store = configureStore({
     reducer: {
@@ -13,7 +14,8 @@ export const store = configureStore({
         newAuth: newAuthReducer,
         profile: profileReducer,
         feed: feedReducer,
-        search: searchReducer
+        search: searchReducer,
+        admin: adminReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(...(process.env.NODE_ENV === "production" ? [logger] : [])),

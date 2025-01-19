@@ -4,7 +4,6 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
 import PostItem from "@/new_components/postItem.tsx";
 import {FC, ReactElement, useEffect, useRef, useState} from "react";
 import {
-    fillProfile2AC,
     getAnotherPageAC, getMyFriendsAC,
     getMyPageAC,
     getMySubscriptionsAC,
@@ -17,18 +16,16 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog.tsx";
 import ShortUserItem from "@/new_components/shortUserItem.tsx";
-import AuthInput from "@/pages/auth/auth-input.tsx";
-import FillProfileGender from "@/pages/fill-profile/fill-profile-gender.tsx";
 import {useLocation} from "react-router";
 import ShortNameLink from "@/new_components/shortNameLink.tsx";
 import FormPost from "@/pages/main/user-page/form-post.tsx";
 import FormAvatar from "@/pages/main/user-page/form-avatar.tsx";
 import {IDetailsResponse} from "@/api/auth/types.ts";
+import FormFillUser from "@/pages/main/form-fill-user.tsx";
 
 interface IUserPageProps {
     type: "my" | "another"
@@ -70,24 +67,12 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const [createPostState, setCreatePostState] = useState(false);
     const [updateAvatarState, setUpdateAvatarState] = useState(false);
 
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [shortName, setShortName] = useState("");
-    const [birthDate, setBirthDate] = useState("");
-    const [gender, setGender] = useState(0);
-
-
     const [imagePreviewState, setImagePreviewState] = useState(false);
     const [currentImagePreview, setCurrentImagePreview] = useState("");
 
     const [isSubscribed, setIsSubscribed] = useState(false);
 
     useEffect(() => {
-        setFirstName(myPageData.firstName!);
-        setLastName(myPageData.lastName!);
-        setShortName(myPageData.shortName!);
-        setBirthDate(myPageData.dateOfBirth!);
-        setGender(myPageData.gender! === "male" ? 0 : 1);
         setIsSubscribed(false);
     }, [myPageData]);
 
@@ -135,20 +120,6 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const subscriptions: ReactElement[] = mySubscriptions.map((subscription: IShortUser) =>
         <ShortUserItem data={subscription}/>
     );
-
-    const handleEditProfileSubmit = () => {
-        const data = {
-            firstName,
-            lastName,
-            shortName,
-            birthDate,
-            gender: gender ? "female" : "male",
-            avatar: ""
-        }
-
-        dispatch(fillProfile2AC(data));
-        setEditProfileState(false);
-    }
 
     const currentUser: IShortUser = {
         shortName: details.shortname,
@@ -215,40 +186,7 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                 </DialogContent>
             </Dialog>
 
-            <Dialog open={editProfileState} onOpenChange={() => setEditProfileState(false)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Редактировать профиль</DialogTitle>
-                        <DialogDescription>
-                            <div className={"flex flex-col gap-3 mt-3"}>
-                                <div className={"flex flex-col gap-1.5"}>
-                                    <AuthInput title={"Ваше имя"} placeholder={"Введите имя"} value={firstName}
-                                               onChange={setFirstName}/>
-                                    <AuthInput title={"Ваша фамилия"} placeholder={"Введите фамилию"}
-                                               value={lastName}
-                                               onChange={setLastName}/>
-                                    <AuthInput title={"Никнейм"} placeholder={"Введите никнейм"} value={shortName}
-                                               onChange={setShortName}/>
-                                    <AuthInput title={"Дата рождения"} placeholder={"2000-03-28"} value={birthDate}
-                                               onChange={setBirthDate}/>
-                                    <div className={"flex justify-start"}>
-                                        <FillProfileGender items={["Мужской", "Женский"]} activeButton={gender}
-                                                           setActiveButton={setGender}/>
-                                    </div>
-                                </div>
-
-                                <div className={"text-red-500"}>
-
-                                </div>
-                            </div>
-
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button onClick={handleEditProfileSubmit}>Применить</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <FormFillUser type={"user"} state={editProfileState} setState={setEditProfileState} pageData={myPageData}/>
 
             <FormPost state={createPostState} setState={setCreatePostState} type={"add"}
                       profileId={myPageData.profileId} thumbnail={myThumbnail} place={type === "my" ? "myPage" : "anotherPage"}/>
@@ -325,7 +263,9 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                     <div className={"sticky top-[96px] h-[520px] flex flex-col gap-3"}>
                         <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
                             <div className={"flex flex-col gap-3"}>
-                                <ShortNameLink content={"Подписчики " + myPageData.subscribersCount} to={
+                                <ShortNameLink
+                                    content={"Подписчики " + (subscribers.length > Number(myPageData.subscribersCount)
+                                        ? subscribers.length : myPageData.subscribersCount)} to={
                                     type === "my" ? "/my-friends/subscribers" : `/friends/subscribers/${myPageData.shortName}`
                                 }/>
                                 <div className={"flex justify-start items-start gap-1"}>
@@ -333,7 +273,8 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                                 </div>
                             </div>
                             <div className={"flex flex-col gap-3"}>
-                                <ShortNameLink content={"Друзья " + myPageData.friendsCount} to={
+                                <ShortNameLink content={"Друзья " + (friends.length > Number(myPageData.friendsCount)
+                                    ? friends.length : myPageData.friendsCount)} to={
                                     type === "my" ? "/my-friends/friends" : `/friends/friends/${myPageData.shortName}`
                                 }/>
                                 <div className={"flex justify-start items-start gap-1"}>
@@ -342,7 +283,8 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                             </div>
                         </div>
                         <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
-                            <ShortNameLink content={"Подписки " + myPageData.subscriptionsCount} to={
+                            <ShortNameLink content={"Подписки " + (subscriptions.length > Number(myPageData.subscriptionsCount)
+                                ? subscriptions.length : myPageData.subscriptionsCount)} to={
                                 type === "my" ? "/my-friends/subscriptions" : `/friends/subscriptions/${myPageData.shortName}`
                             }/>
                             <div className={"flex justify-start items-start gap-1"}>

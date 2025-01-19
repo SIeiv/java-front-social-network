@@ -1,3 +1,5 @@
+import {UserRolesType} from "@/types.ts";
+
 export interface ILoginRequest {
     "email": string,
     "password": string,
@@ -15,7 +17,7 @@ export interface IDetailsResponse {
     "shortname": string,
     "firstname": string,
     "lastname": string,
-    role: string,
+    role: UserRolesType,
     "email": string,
     "profileId": number,
     verified: boolean,

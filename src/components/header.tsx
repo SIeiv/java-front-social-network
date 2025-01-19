@@ -2,7 +2,7 @@ import logo from "../assets/react.svg";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
 import {Button} from "@/components/ui/button.tsx";
-import {CircleUserRound, LogOut, Search} from "lucide-react";
+import {CircleUserRound, FileText, LogOut, Search} from "lucide-react";
 import {NavLink, useNavigate} from "react-router";
 import {logoutUser} from "@/store/auth/actionCreators.ts";
 import {Label} from "@/components/ui/label.tsx";
@@ -110,18 +110,21 @@ const Header = () => {
                             <DropdownMenuContent>
                                 <DropdownMenuLabel className={"flex items-center justify-center"}>
                                     <div className={"flex flex-col items-center justify-center gap-2"}>
-                                        {/*<Avatar className="w-16 h-16">
-                                        <AvatarImage src={myThumbnail ? myThumbnail : ""} />
-                                        <AvatarFallback>AV</AvatarFallback>
-                                    </Avatar>*/}
                                         <div className={"flex flex-col items-center justify-center"}>
                                             <Label>{profile.firstname + " " + profile.lastname}</Label>
                                             <Label className={"text-slate-500"}>{profile.email}</Label>
                                         </div>
-
                                     </div>
 
                                 </DropdownMenuLabel>
+                                {profile.role === "ROLE_ADMIN"
+                                    && <NavLink to={"/admin-panel"}>
+                                        <DropdownMenuItem className={"cursor-pointer"}>
+                                            <FileText />
+                                            Админ панель
+                                        </DropdownMenuItem>
+                                    </NavLink>
+                                }
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className={"cursor-pointer"} onClick={handleLogout}>
                                     <LogOut />

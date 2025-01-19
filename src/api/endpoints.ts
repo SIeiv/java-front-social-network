@@ -29,6 +29,12 @@ const endpoints = {
         GET_RECS: BASE_URL + "/feed/recommended",
     },
     SUBSCRIPTIONS: BASE_URL + "/user/subscribe",
+    ADMIN: {
+        GET_USERS: BASE_URL + "/admin/get-users",
+        EDIT_USER: BASE_URL + "/admin/edit-user",
+        ADD_USER: BASE_URL + "/admin/signup",
+        VERIFY_USER: BASE_URL + "/admin/fill-profile",
+    }
 }
 
 export default endpoints;

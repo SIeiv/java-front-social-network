@@ -7,6 +7,7 @@ import Feed from "@/pages/main/feed.tsx";
 import RouterFriends from "@/pages/main/router-friends.tsx";
 import {useAppSelector} from "@/hooks.ts";
 import Search from "@/pages/main/search.tsx";
+import AdminPanel from "@/pages/main/admin-panel.tsx";
 
 
 const Main = () => {
@@ -37,6 +38,7 @@ const Main = () => {
                         <Route path="/feed/recommended" element={<Feed type={"recommended"}/>}/>
                         <Route path="/my-friends/*" element={<RouterFriends/>}/>
                         <Route path="/search/*" element={<Search/>}/>
+                        <Route path="/admin-panel" element={<AdminPanel/>}/>
                     </Routes>
                 </div>
             </div>

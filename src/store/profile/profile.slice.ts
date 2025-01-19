@@ -327,6 +327,9 @@ export const authSlice = createSlice({
                         state.anotherSubscriptions.splice(index, 1);
                     }
                 })
+                if (state.anotherPageData.subscriptionsCount) {
+                    state.anotherPageData.subscriptionsCount--;
+                }
             }
 
         },
@@ -335,6 +338,12 @@ export const authSlice = createSlice({
             let isAnotherUserSubscribed = false;
             for (let i = 0; i < state.anotherSubscriptions.length; i++) {
                 if (state.anotherSubscriptions[i].shortName === action.payload.currentUser.shortName) {
+                    isAnotherUserSubscribed = true;
+                    break;
+                }
+            }
+            for (let i = 0; i < state.anotherFriends.length; i++) {
+                if (state.anotherFriends[i].shortName === action.payload.currentUser.shortName) {
                     isAnotherUserSubscribed = true;
                     break;
                 }
@@ -350,7 +359,6 @@ export const authSlice = createSlice({
                     state.myPageData.subscriptionsCount--;
                 }
 
-                state.anotherSubscribers.push(action.payload.currentUser);
                 state.anotherSubscribers.forEach((subscriber, index) => {
                     if (subscriber.shortName === action.payload.currentUser.shortName) {
                         state.anotherSubscribers.splice(index, 1);
@@ -379,6 +387,9 @@ export const authSlice = createSlice({
                     state.anotherPageData.friendsCount--
                 }
                 state.anotherSubscriptions.push(action.payload.currentUser);
+                if (state.anotherPageData.subscriptionsCount) {
+                    state.anotherPageData.subscriptionsCount++
+                }
             }
 
         },

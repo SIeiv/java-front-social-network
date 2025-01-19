@@ -53,3 +53,5 @@ export type IRecommended = {
     profiles: IShortUser[],
     posts: IPost[]
 }
+
+export type UserRolesType = "ROLE_USER" | "ROLE_ADMIN" | "ROLE_MODERATOR" | "ROLE_VISITOR";

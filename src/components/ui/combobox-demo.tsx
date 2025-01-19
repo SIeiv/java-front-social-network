@@ -18,6 +18,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import {FC} from "react";
+import {UserRolesType} from "@/types.ts";
 
 const frameworks = [
     {
@@ -32,11 +33,15 @@ const frameworks = [
         value: "ROLE_ADMIN",
         label: "ROLE_ADMIN",
     },
+    {
+        value: "ROLE_VISITOR",
+        label: "ROLE_VISITOR",
+    },
 
 ]
 
 interface ICombobox {
-    role: "ROLE_USER" | "ROLE_ADMIN" | "ROLE_MODERATOR"
+    role: UserRolesType
     setEditRole: any
 }
 
