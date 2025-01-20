@@ -24,6 +24,8 @@ const FillProfile = () => {
     const [birthDate, setBirthDate] = useState("");
     const [gender, setGender] = useState(0);
 
+    const [error, setError] = useState("");
+
     const handleSubmit = () => {
         const data: IFillProfileRequest = {
             firstName,
@@ -34,7 +36,19 @@ const FillProfile = () => {
             avatar: ""
         }
 
-        dispatch(fillProfileAC(data));
+        const dataReg = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/;
+
+        if (firstName === "") {
+            setError("Имя введено некорректно!");
+        } else if (lastName === "") {
+            setError("Фамилия введена некорректно!");
+        } else if (shortName === "") {
+            setError("Никнейм введён некорректно!")
+        } else if (birthDate === "" || !dataReg.test(birthDate)) {
+            setError("Дата рождения введена некорректно!")
+        } else {
+            dispatch(fillProfileAC(data));
+        }
     }
 
     const [alertState, setAlertState] = useState(false);
@@ -76,7 +90,7 @@ const FillProfile = () => {
                 </div>
 
                 <div className={"text-red-500"}>
-
+                    {error}
                 </div>
                 <div>
                     <Button className={"w-full h-10"} onClick={handleSubmit}>Заполнить</Button>

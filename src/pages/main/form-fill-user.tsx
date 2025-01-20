@@ -34,6 +34,8 @@ const FormFillUser: FC<IFormFillUser> = ({type, state, setState, pageData, user}
     const [birthDate, setBirthDate] = useState(type === "user" ? pageData!.dateOfBirth! : "");
     const [gender, setGender] = useState(type === "user" ? (pageData!.gender! === "male" ? 0 : 1) : 0);
 
+    const [error, setError] = useState();
+
     const handleFillProfileSubmit = () => {
         const data = {
             firstName,
