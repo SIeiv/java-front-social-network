@@ -2,11 +2,11 @@ import {configureStore} from "@reduxjs/toolkit";
 import authReducer from "./auth/auth.slice.ts"
 import newAuthReducer from "./auth/new_auth.slice.ts"
 
-import logger from "redux-logger";
 import profileReducer from "./profile/profile.slice.ts";
 import feedReducer from "./feed/feed.slice.ts";
 import searchReducer from "./search/search.slice.ts";
 import adminReducer from "./admin/admin.slice.ts";
+import {profileApi} from "@/exp_api/profileApi.ts";
 
 export const store = configureStore({
     reducer: {
@@ -16,9 +16,11 @@ export const store = configureStore({
         feed: feedReducer,
         search: searchReducer,
         admin: adminReducer,
+
+        [profileApi.reducerPath]: profileApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(...(process.env.NODE_ENV === "production" ? [logger] : [])),
+        getDefaultMiddleware().concat(profileApi.middleware),
 });
 
 // Get the type of our store variable

@@ -26,6 +26,8 @@ import FormPost from "@/pages/main/user-page/form-post.tsx";
 import FormAvatar from "@/pages/main/user-page/form-avatar.tsx";
 import {IDetailsResponse} from "@/api/auth/types.ts";
 import FormFillUser from "@/pages/main/form-fill-user.tsx";
+import {useGetFriendsQuery, useGetProfileQuery, useGetSubscribersQuery} from "@/exp_api/profileApi.ts";
+import {Skeleton} from "@/components/ui/skeleton.tsx";
 
 interface IUserPageProps {
     type: "my" | "another"
@@ -34,13 +36,19 @@ interface IUserPageProps {
 
 const UserPage: FC<IUserPageProps> = ({type}) => {
     const dispatch = useAppDispatch();
+    const {pathname} = useLocation();
 
-    let myPageData: IUserPage;
-    let mySubscribers: IShortUser[] = [];
-    let myFriends: IShortUser[] = [];
+    //new
+    const user = type === "my" ? "mypage" : pathname.split("/").pop();
+
+    const {data: pageData = [], isLoading: isProfileLoading} = useGetProfileQuery(user);
+    const {data: subscribersData = [], isLoading: isSubscribersLoading} = useGetSubscribersQuery(user);
+    const {data: friendsData = [], isLoading: isFriendsLoading} = useGetFriendsQuery(user);
+
+    //let mySubscribers: IShortUser[] = [];
+    //let myFriends: IShortUser[] = [];
     let mySubscriptions: IShortUser[] = [];
 
-    const {pathname} = useLocation();
 
     const itemsCount = 4;
 
@@ -51,14 +59,8 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const fullMyFriends =  useAppSelector(state => state.profile.myFriends);
 
     if (type === "my") {
-        myPageData = useAppSelector(state => state.profile.myPageData);
-        mySubscribers = useAppSelector(state => state.profile.mySubscribers.slice(0, itemsCount));
-        myFriends = useAppSelector(state => state.profile.myFriends.slice(0, itemsCount));
         mySubscriptions = useAppSelector(state => state.profile.mySubscriptions.slice(0, itemsCount));
     } else {
-        myPageData = useAppSelector(state => state.profile.anotherPageData);
-        mySubscribers = useAppSelector(state => state.profile.anotherSubscribers.slice(0, itemsCount));
-        myFriends = useAppSelector(state => state.profile.anotherFriends.slice(0, itemsCount));
         mySubscriptions = useAppSelector(state => state.profile.anotherSubscriptions.slice(0, itemsCount));
     }
 
@@ -74,13 +76,13 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
 
     useEffect(() => {
         setIsSubscribed(false);
-    }, [myPageData]);
+    }, [pageData]);
 
     useEffect(() => {
         if (type === "my") {
-            if (!myPageData.shortName) dispatch(getMyPageAC());
+            //if (!myPageData.shortName) dispatch(getMyPageAC());
         } else {
-            dispatch(getAnotherPageAC());
+            //dispatch(getAnotherPageAC());
             if (fullMySubscriptions.length === 0) dispatch(getMySubscriptionsAC(details!.shortname));
             if (fullMyFriends.length === 0) dispatch(getMyFriendsAC(details!.shortname));
         }
@@ -89,37 +91,37 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     useEffect(() => {
         if (type === "another") {
             for (let i = 0; i < fullMySubscriptions.length; i++) {
-                if (fullMySubscriptions[i].shortName === myPageData.shortName) {
+                if (fullMySubscriptions[i].shortName === pageData.shortName) {
                     setIsSubscribed(true);
                     break;
                 }
             }
             for (let i = 0; i < fullMyFriends.length; i++) {
-                if (fullMyFriends[i].shortName === myPageData.shortName) {
+                if (fullMyFriends[i].shortName === pageData.shortName) {
                     setIsSubscribed(true);
                     break;
                 }
             }
         }
 
-    }, [fullMySubscriptions, fullMyFriends, pathname, myPageData]);
+    }, [fullMySubscriptions, fullMyFriends, pathname, pageData]);
 
-    const posts: ReactElement[] = myPageData.userPosts.map((post: IPost) =>
-        <PostItem type={type} firstName={myPageData.firstName} lastName={myPageData.lastName}
-                  shortName={myPageData.shortName} postData={post} place={type === "my" ? "myPage" : "anotherPage"}/>
+    const posts: ReactElement[] = pageData.userPosts && pageData.userPosts.map((post: IPost) =>
+        <PostItem type={type} firstName={pageData.firstName} lastName={pageData.lastName}
+                  shortName={pageData.shortName} postData={post} place={type === "my" ? "myPage" : "anotherPage"}/>
     );
 
-    const subscribers: ReactElement[] = mySubscribers.map((subscriber: IShortUser) =>
-        <ShortUserItem data={subscriber}/>
-    );
+    const subscribers: ReactElement[] = subscribersData.map((subscriber: IShortUser, index: number) => {
+        if (index < itemsCount) return <ShortUserItem data={subscriber}/>
+    });
 
-    const friends: ReactElement[] = myFriends.map((friend: IShortUser) =>
-        <ShortUserItem data={friend}/>
-    );
+    const friends: ReactElement[] = friendsData.map((friend: IShortUser, index: number) => {
+        if (index < itemsCount) return <ShortUserItem data={friend}/>
+    });
 
-    const subscriptions: ReactElement[] = mySubscriptions.map((subscription: IShortUser) =>
-        <ShortUserItem data={subscription}/>
-    );
+    const subscriptions: ReactElement[] = mySubscriptions.map((subscription: IShortUser, index: number) => {
+        if (index < itemsCount) return <ShortUserItem data={subscription}/>
+    });
 
     const formData = () => {
         const currentUser: IShortUser = {
@@ -131,11 +133,11 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
         };
 
         const anotherUser: IShortUser = {
-            shortName: myPageData.shortName!,
-            profileId: myPageData.profileId!,
-            lastName: myPageData.lastName!,
-            firstName: myPageData.firstName!,
-            thumbnail: myPageData.image!
+            shortName: pageData.shortName!,
+            profileId: pageData.profileId!,
+            lastName: pageData.lastName!,
+            firstName: pageData.firstName!,
+            thumbnail: pageData.image!
         };
 
         return {currentUser, anotherUser}
@@ -157,7 +159,7 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
         day: 'numeric',
         timezone: 'UTC',
     };
-    const formedDateOfBirth: string = myPageData.dateOfBirth ? new Date(myPageData.dateOfBirth).toLocaleString("ru", options) : "";
+    const formedDateOfBirth: string = pageData.dateOfBirth ? new Date(pageData.dateOfBirth).toLocaleString("ru", options) : "";
 
     const imgRef = useRef<HTMLImageElement>(null);
 
@@ -172,18 +174,18 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                             <div className={"flex flex-col gap-3 mt-3"}>
                                 <div className={"flex gap-1 items-center"}>
                                     <AtSign/>
-                                    <Label>{myPageData.shortName}</Label>
+                                    <Label>{pageData.shortName}</Label>
                                 </div>
-                                {myPageData.dateOfBirth
+                                {pageData.dateOfBirth
                                     && <div className={"flex gap-1 items-center"}>
                                         <Gift/>
                                         <Label>{"День рождения: " + formedDateOfBirth}</Label>
                                     </div>
                                 }
-                                {myPageData.gender
+                                {pageData.gender
                                     && <div className={"flex gap-1 items-center"}>
                                         <Ghost/>
-                                        <Label>{"Пол: " + (myPageData.gender === "male" ? "Мужской" : "Женский")}</Label>
+                                        <Label>{"Пол: " + (pageData.gender === "male" ? "Мужской" : "Женский")}</Label>
                                     </div>
                                 }
                             </div>
@@ -192,10 +194,10 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                 </DialogContent>
             </Dialog>
 
-            <FormFillUser type={"user"} state={editProfileState} setState={setEditProfileState} pageData={myPageData}/>
+            <FormFillUser type={"user"} state={editProfileState} setState={setEditProfileState} pageData={pageData}/>
 
             <FormPost state={createPostState} setState={setCreatePostState} type={"add"}
-                      profileId={myPageData.profileId} thumbnail={myThumbnail} place={type === "my" ? "myPage" : "anotherPage"}/>
+                      profileId={pageData.profileId} thumbnail={myThumbnail} place={type === "my" ? "myPage" : "anotherPage"}/>
 
             <Dialog open={imagePreviewState} onOpenChange={() => setImagePreviewState(false)}>
                 <DialogContent className={`p-0 max-h-[80vh]`}>
@@ -214,14 +216,17 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                         <Avatar className={"w-32 h-32"}>
                             <AvatarImage onClick={() => {
                                 setImagePreviewState(true);
-                                setCurrentImagePreview(myPageData.image!);
-                            }} src={myPageData.image!}/>
-                            <AvatarFallback className={"text-3xl"}>{(myPageData.firstName && myPageData.lastName)
-                                && myPageData.firstName[0] + myPageData.lastName[0]}</AvatarFallback>
+                                setCurrentImagePreview(pageData.image!);
+                            }} src={pageData.image!}/>
+                            <AvatarFallback className={"text-3xl"}>{(pageData.firstName && pageData.lastName)
+                                && pageData.firstName[0] + pageData.lastName[0]}</AvatarFallback>
                         </Avatar>
                         <div className={"flex flex-col justify-center items-start h-full gap-2"}>
-                            <Label className={"text-base"}>{myPageData.firstName + " " + myPageData.lastName}</Label>
-                            {/*<Label>{"@" + myPageData.shortName}</Label>*/}
+                            {isProfileLoading
+                                ? <Skeleton className={"w-32 h-6"}/>
+                                : <Label className={"text-base"}>{pageData.firstName + " " + pageData.lastName}</Label>
+                            }
+
                             <Label onClick={() => {
                                 setProfileDetailsState(true)
                             }} className={"hover:underline cursor-pointer flex items-center justify-center gap-1"}>
@@ -262,36 +267,44 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                         </div>}
                         <div
                             className={"flex flex-col justify-center rounded-lg bg-white items-start p-3 gap-6 box-border"}>
-                            {posts}
+                            {isProfileLoading
+                                ? <Skeleton className={"w-full h-[450px]"}/>
+                                : posts}
                         </div>
                     </div>
 
                     <div className={"sticky top-[96px] h-[520px] flex flex-col gap-3"}>
                         <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
                             <div className={"flex flex-col gap-3"}>
-                                <ShortNameLink
-                                    content={"Подписчики " + (subscribers.length > Number(myPageData.subscribersCount)
-                                        ? subscribers.length : myPageData.subscribersCount)} to={
-                                    type === "my" ? "/my-friends/subscribers" : `/friends/subscribers/${myPageData.shortName}`
-                                }/>
+                                {isSubscribersLoading
+                                    ? <Skeleton className={"w-32 h-6"}/>
+                                    : <ShortNameLink
+                                        content={"Подписчики " + subscribersData.length} to={
+                                        type === "my" ? "/my-friends/subscribers" : `/friends/subscribers/${pageData.shortName}`
+                                    }/>
+                                }
+
                                 <div className={"flex justify-start items-start gap-1"}>
                                     {subscribers}
                                 </div>
                             </div>
                             <div className={"flex flex-col gap-3"}>
-                                <ShortNameLink content={"Друзья " + (friends.length > Number(myPageData.friendsCount)
-                                    ? friends.length : myPageData.friendsCount)} to={
-                                    type === "my" ? "/my-friends/friends" : `/friends/friends/${myPageData.shortName}`
-                                }/>
+                                {isFriendsLoading
+                                    ? <Skeleton className={"w-32 h-6"}/>
+                                    : <ShortNameLink content={"Друзья " + friendsData.length} to={
+                                        type === "my" ? "/my-friends/friends" : `/friends/friends/${pageData.shortName}`
+                                    }/>
+                                }
+
                                 <div className={"flex justify-start items-start gap-1"}>
                                     {friends}
                                 </div>
                             </div>
                         </div>
                         <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
-                            <ShortNameLink content={"Подписки " + (subscriptions.length > Number(myPageData.subscriptionsCount)
-                                ? subscriptions.length : myPageData.subscriptionsCount)} to={
-                                type === "my" ? "/my-friends/subscriptions" : `/friends/subscriptions/${myPageData.shortName}`
+                            <ShortNameLink content={"Подписки " + (subscriptions.length > Number(pageData.subscriptionsCount)
+                                ? subscriptions.length : pageData.subscriptionsCount)} to={
+                                type === "my" ? "/my-friends/subscriptions" : `/friends/subscriptions/${pageData.shortName}`
                             }/>
                             <div className={"flex justify-start items-start gap-1"}>
                                 {subscriptions}
