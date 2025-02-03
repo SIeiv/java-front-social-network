@@ -42,6 +42,12 @@ import {
     local_unlikePost_feed,
     local_unlikePost_recommended
 } from "@/store/feed/feed.slice.ts";
+import {
+    setFriendsLoading,
+    setPageLoading,
+    setSubscribersLoading,
+    setSubscriptionsLoading
+} from "@/store/loading.slice.ts";
 
 
 export const fillProfileAC = (data: IFillProfileRequest) => async (dispatch: Dispatch) => {
@@ -69,17 +75,27 @@ export const fillProfile2AC = (data: IFillProfileRequest) => async (dispatch: Di
 
 export const getMyPageAC = () => async (dispatch: Dispatch) => {
     try {
+        dispatch(setPageLoading(true));
+        dispatch(setSubscribersLoading(true));
+        dispatch(setFriendsLoading(true));
+        dispatch(setSubscriptionsLoading(true));
         const response = await api.profile.getMyPage()
         dispatch(setMyPageData(response.data));
+        dispatch(setPageLoading(false));
+
 
         const subscribersResponse = await api.profile.getUserSubscribers(response.data.shortName!);
         dispatch(setMySubscribers(subscribersResponse.data));
+        dispatch(setSubscribersLoading(false));
 
         const friendsResponse = await api.profile.getUserFriends(response.data.shortName!);
         dispatch(setMyFriends(friendsResponse.data));
+        dispatch(setFriendsLoading(false));
 
         const subscriptionsResponse = await api.profile.getUserSubscriptions(response.data.shortName!);
         dispatch(setMySubscriptions(subscriptionsResponse.data));
+        dispatch(setSubscriptionsLoading(false));
+
     } catch (error: any) {
         console.error(error);
     }
@@ -87,8 +103,10 @@ export const getMyPageAC = () => async (dispatch: Dispatch) => {
 
 export const getMyFriendsAC = (username: string) => async (dispatch: Dispatch) => {
     try {
+        dispatch(setFriendsLoading(true));
         const friendsResponse = await api.profile.getUserFriends(username);
         dispatch(setMyFriends(friendsResponse.data));
+        dispatch(setFriendsLoading(false));
     } catch (error: any) {
         console.error(error);
     }
@@ -96,8 +114,10 @@ export const getMyFriendsAC = (username: string) => async (dispatch: Dispatch) =
 
 export const getMySubscribersAC = (username: string) => async (dispatch: Dispatch) => {
     try {
+        dispatch(setSubscribersLoading(true));
         const friendsResponse = await api.profile.getUserSubscribers(username);
         dispatch(setMySubscribers(friendsResponse.data));
+        dispatch(setSubscribersLoading(false));
     } catch (error: any) {
         console.error(error);
     }
@@ -105,8 +125,10 @@ export const getMySubscribersAC = (username: string) => async (dispatch: Dispatc
 
 export const getMySubscriptionsAC = (username: string) => async (dispatch: Dispatch) => {
     try {
+        dispatch(setSubscriptionsLoading(true));
         const friendsResponse = await api.profile.getUserSubscriptions(username);
         dispatch(setMySubscriptions(friendsResponse.data));
+        dispatch(setSubscriptionsLoading(false));
     } catch (error: any) {
         console.error(error);
     }
@@ -123,8 +145,10 @@ export const getMyThumbnailAC = () => async (dispatch: Dispatch) => {
 
 export const getAnotherFriendsAC = (username: string) => async (dispatch: Dispatch) => {
     try {
+        dispatch(setFriendsLoading(true));
         const friendsResponse = await api.profile.getUserFriends(username);
         dispatch(setAnotherFriends(friendsResponse.data));
+        dispatch(setFriendsLoading(false));
     } catch (error: any) {
         console.error(error);
     }
@@ -132,8 +156,10 @@ export const getAnotherFriendsAC = (username: string) => async (dispatch: Dispat
 
 export const getAnotherSubscribersAC = (username: string) => async (dispatch: Dispatch) => {
     try {
+        dispatch(setSubscribersLoading(true));
         const friendsResponse = await api.profile.getUserSubscribers(username);
         dispatch(setAnotherSubscribers(friendsResponse.data));
+        dispatch(setSubscribersLoading(false));
     } catch (error: any) {
         console.error(error);
     }
@@ -141,8 +167,10 @@ export const getAnotherSubscribersAC = (username: string) => async (dispatch: Di
 
 export const getAnotherSubscriptionsAC = (username: string) => async (dispatch: Dispatch) => {
     try {
+        dispatch(setSubscriptionsLoading(true));
         const friendsResponse = await api.profile.getUserSubscriptions(username);
         dispatch(setAnotherSubscriptions(friendsResponse.data));
+        dispatch(setSubscriptionsLoading(false));
     } catch (error: any) {
         console.error(error);
     }
@@ -154,18 +182,27 @@ export const getAnotherPageAC = () => async (dispatch: Dispatch) => {
     const username = url.split('/').pop()!;
 
     try {
+        dispatch(setPageLoading(true));
+        dispatch(setSubscribersLoading(true));
+        dispatch(setFriendsLoading(true));
+        dispatch(setSubscriptionsLoading(true));
         dispatch(clearAnotherUser());
         const response = await api.profile.getAnotherPage(username)
         dispatch(setAnotherPageData(response.data));
+        dispatch(setPageLoading(false));
 
         const subscribersResponse = await api.profile.getUserSubscribers(username);
         dispatch(setAnotherSubscribers(subscribersResponse.data));
+        dispatch(setSubscribersLoading(false));
 
         const friendsResponse = await api.profile.getUserFriends(username);
         dispatch(setAnotherFriends(friendsResponse.data));
+        dispatch(setFriendsLoading(false));
 
         const subscriptionsResponse = await api.profile.getUserSubscriptions(username);
         dispatch(setAnotherSubscriptions(subscriptionsResponse.data));
+        dispatch(setSubscriptionsLoading(false));
+
     } catch (error: any) {
         console.error(error);
     }

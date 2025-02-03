@@ -14,7 +14,7 @@ import {IDetailsResponse} from "@/api/auth/types.ts";
 const Main = () => {
     const navigate = useNavigate();
 
-    const profile = useAppSelector(state => state.auth.appInitializeData.initialUserData);
+    const profile: IDetailsResponse = useAppSelector(state => state.auth.appInitializeData.initialUserData);
     const initializeState = useAppSelector(state => state.auth.appInitializeData.isLoading);
 
     /*const appIsInit = useAppSelector(state => state.auth.appInitializeData.initialized);*/

@@ -52,7 +52,10 @@ const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail, type, p
             "likes": [],
             "likesCount": 0,
             "commentsCount": 0,
-            "comments": []
+            "comments": [],
+            firstName: "",
+            lastName: "",
+            shortName: ""
         }
 
         dispatch(createPostAC(data, data2));

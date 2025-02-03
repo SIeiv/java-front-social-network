@@ -25,8 +25,8 @@ const endpoints = {
         DELETE_POST_COMMENT: BASE_URL + "/comments/delete",
     },
     FEED: {
-        GET_FEED: BASE_URL + "/feed/main",
-        GET_RECS: BASE_URL + "/feed/recommended",
+        GET_FEED: (size: number, page: number) => BASE_URL + `/feed/main?size=${size}&page=${page}`,
+        GET_RECS: (size: number, page: number) => BASE_URL + `/feed/recommended?size=${size}&page=${page}`,
     },
     SUBSCRIPTIONS: BASE_URL + "/user/subscribe",
     ADMIN: {

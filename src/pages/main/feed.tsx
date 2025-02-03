@@ -1,13 +1,16 @@
 import {Button} from "@/components/ui/button.tsx";
-import {FC, ReactElement, useEffect} from "react";
+import {FC, ReactElement, useEffect, useState} from "react";
 import {IPost, IRecommended, IShortUser} from "@/types.ts";
 import PostItem from "@/new_components/postItem.tsx";
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
-import {getFeedAC, getRecommendedAC} from "@/store/feed/actionCreators.ts";
+import {appendFeedAC, getFeedAC, getRecommendedAC} from "@/store/feed/actionCreators.ts";
 import {NavLink, useLocation} from "react-router";
 import {Label} from "@/components/ui/label.tsx";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel.tsx";
 import ShortUserItem from "@/new_components/shortUserItem.tsx";
+import loadingCircles from "@/assets/bouncing-circles.svg";
+import ShortUserSkeleton from "@/new_components/shortUserSkeleton.tsx";
+import {setFeedAppendLoading} from "@/store/loading.slice.ts";
 
 interface IFeedProps {
     type: "main" | "recommended";
@@ -16,6 +19,9 @@ interface IFeedProps {
 const Feed: FC<IFeedProps> = ({type}) => {
     const dispatch = useAppDispatch();
     const {pathname} = useLocation();
+
+    const isLoading = useAppSelector(state => state.loading.feedLoading);
+    const isFeedAppendLoading = useAppSelector(state => state.loading.feedAppendLoading);
 
     let feed: IPost[] = [];
     let recommendedFeed: IRecommended = {
@@ -38,19 +44,54 @@ const Feed: FC<IFeedProps> = ({type}) => {
 
     recommendedUsers = useAppSelector(state => state.feed.recommended.profiles);
 
+    const pageSize = 5;
+    const [currentPage, setCurrentPage] = useState(0);
+
+    const scrollHandler = (e) => {
+        if (e.target.documentElement.scrollHeight - (e.target.documentElement.scrollTop + window.innerHeight) < 100) {
+            dispatch(setFeedAppendLoading(true));
+            console.log(isFeedAppendLoading);
+        }
+
+    }
+
     useEffect(() => {
+        if (isFeedAppendLoading) {
+            setCurrentPage(currentPage + 1);
+            dispatch(appendFeedAC(pageSize, currentPage));
+        }
+
+    }, [isFeedAppendLoading]);
+
+    useEffect(() => {
+        document.addEventListener('scroll', scrollHandler);
+        return () => {removeEventListener('scroll', scrollHandler)};
+    }, []);
+
+    useEffect(() => {
+        setCurrentPage(0);
         if (type === "main") {
-            if (!feed.length) dispatch(getFeedAC());
+            if (!feed.length) {
+                dispatch(getFeedAC(pageSize, currentPage));
+                setCurrentPage(currentPage + 1);
+            }
         } else {
-            if (!recommendedFeed.posts.length) dispatch(getRecommendedAC());
+            if (!recommendedFeed.posts.length) dispatch(getRecommendedAC(pageSize, currentPage));
         }
     }, [pathname]);
 
     const carouselSize = 5;
     let carouselEls: ReactElement[] = [];
+
     let arr = [];
-    for (let i = 0; i < recommendedUsers.length; i++) {
-        arr.push(<ShortUserItem data={recommendedUsers[i]}/>);
+    for (let i = 0; i < (isLoading ? carouselSize : recommendedUsers.length); i++) {
+
+        if (isLoading) {
+            arr.push(<ShortUserSkeleton/>);
+        } else {
+            arr.push(<ShortUserItem data={recommendedUsers[i]}/>);
+        }
+
         if (arr.length === carouselSize) {
             carouselEls.push(<CarouselItem className={"flex"}>{arr}</CarouselItem>)
             arr = [];
@@ -88,7 +129,16 @@ const Feed: FC<IFeedProps> = ({type}) => {
                 }
                 <div
                     className={"flex flex-col justify-center rounded-lg bg-white items-start p-3 gap-6 box-border"}>
-                    {type === "main" ? feedPosts : recommendedFeedPosts}
+                    {isLoading
+                        ? <img src={loadingCircles} alt="" className={"w-16 h-16 m-auto"}/>
+                        : (type === "main"
+                            ? feedPosts
+                            : recommendedFeedPosts)
+                    }
+                </div>
+
+                <div className={"rounded-lg bg-white p-3 mb-3"}>
+                    {isFeedAppendLoading && <img src={loadingCircles} alt="" className={"w-16 h-16 m-auto"}/>}
                 </div>
             </div>
 

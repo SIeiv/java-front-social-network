@@ -1,5 +1,5 @@
 import SidebarButton from "@/pages/main/sidebar/sidebar-button.tsx";
-import {PanelTop, Search, User, Users} from "lucide-react";
+import {PanelTop, User, Users} from "lucide-react";
 
 
 const Sidebar = () => {

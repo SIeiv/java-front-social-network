@@ -13,6 +13,8 @@ import {useAppDispatch, useAppSelector} from "@/hooks.ts";
 import {IShortUser} from "@/types.ts";
 import FriendItem from "@/new_components/friendItem.tsx";
 import ShortNameLink from "@/new_components/shortNameLink.tsx";
+import loadingCircles from "@/assets/bouncing-circles.svg";
+import {Skeleton} from "@/components/ui/skeleton.tsx";
 
 interface IFriendsProps {
     type: "my" | "another";
@@ -26,6 +28,10 @@ const Friends: FC<IFriendsProps> = ({type, category}) => {
     const pathnameEnd = pathname.split("/").pop();
 
     const user = useAppSelector(state => state.auth.appInitializeData.initialUserData)
+
+    const isSubscribersLoading = useAppSelector(state => state.loading.profile.subscribersLoading);
+    const isFriendsLoading = useAppSelector(state => state.loading.profile.friendsLoading);
+    const isSubscriptionsLoading = useAppSelector(state => state.loading.profile.subscriptionsLoading);
 
     let content: IShortUser[] = []
 
@@ -85,13 +91,22 @@ const Friends: FC<IFriendsProps> = ({type, category}) => {
 
                 <div
                     className={"flex flex-col justify-center rounded-lg bg-white items-start p-3 gap-6 box-border"}>
-                    <div className={"flex gap-1"}>
-                        <Label>{titleController() + " " + (content.length) + " "}</Label>
-                        {type === "another" && <ShortNameLink content={`(@${pathnameEnd})`} to={`/user/${pathnameEnd}`}/>}
+                    <div>
+                        {isSubscribersLoading || isFriendsLoading || isSubscriptionsLoading
+                            ? <Skeleton className={"w-32 h-5"}/>
+                            : <div className={"flex gap-1"}>
+                                <Label>{titleController() + " " + (content.length) + " "}</Label>
+                                {type === "another" && <ShortNameLink content={`(@${pathnameEnd})`} to={`/user/${pathnameEnd}`}/>}
+                            </div>
+                        }
+
                     </div>
 
-                    <div className={"flex flex-col gap-4"}>
-                        {contentItems}
+                    <div className={"flex flex-col gap-4 w-full"}>
+                        {isSubscribersLoading || isFriendsLoading || isSubscriptionsLoading
+                            ? <img src={loadingCircles} alt="" className={"w-16 h-16 m-auto"}/>
+                            : contentItems
+                        }
                     </div>
                 </div>
             </div>

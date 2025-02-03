@@ -28,6 +28,18 @@ export const feedSlice = createSlice({
             state.feed = [...action.payload];
         },
 
+        appendFeed: (state, action: PayloadAction<IFeed>) => {
+            action.payload.forEach(post => {
+                post.authorImage = `data:image/png;base64,${post.authorImage}`;
+                post.image = `data:image/png;base64,${post.image}`;
+                post.comments.forEach((comment) => {
+                    comment.image = `data:image/png;base64,${comment.image}`
+                })
+            })
+
+            state.feed.push(...action.payload);
+        },
+
         setRecommended: (state, action: PayloadAction<IRecommended>) => {
             action.payload.posts.forEach(post => {
                 post.authorImage = `data:image/png;base64,${post.authorImage}`;
@@ -183,7 +195,7 @@ export const {
     resetFeed, setFeed, setRecommended, local_editRecommendationPostComment, local_editFeedPostComment,
     local_editPost_feed, local_editPost_recommended, local_deletePost_feed, local_deletePost_recommended,
     local_createFeedPostComment, local_createRecommendationPostComment, local_deleteRecommendationPostComment, local_deleteFeedPostComment,
-    local_unlikePost_feed, local_likePost_feed, local_likePost_recommended, local_unlikePost_recommended
+    local_unlikePost_feed, local_likePost_feed, local_likePost_recommended, local_unlikePost_recommended, appendFeed
 } = feedSlice.actions;
 
 export default feedSlice.reducer;

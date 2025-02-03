@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 
@@ -20,7 +19,6 @@ interface DatePickerProps {
 }
 
 export const DatePicker: FC<DatePickerProps> = ({initialDate, initialTimeSetter}) => {
-    const [date, setDate] = React.useState(initialDate);
 
     return (
         <Popover>

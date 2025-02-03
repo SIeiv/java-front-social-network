@@ -9,7 +9,6 @@ import {
     IUpdateAvatarRequest,
 } from "@/api/profile/types.ts";
 import {IShortUser, IUserPage} from "@/types.ts";
-import {IDeletePostRequest} from "@/api/posts/types.ts";
 
 export const fillProfile = (params: IFillProfileRequest): AxiosPromise<string> =>
     axiosInstance.post(endpoints.PROFILE.FILL_PROFILE, params, {

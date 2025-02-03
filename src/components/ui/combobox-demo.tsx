@@ -75,7 +75,7 @@ export const ComboboxDemo: FC<ICombobox> = ({role, setEditRole}) => {
                                     key={framework.value}
                                     value={framework.value}
                                     onSelect={(currentValue) => {
-                                        setValue(currentValue === value ? "" : currentValue);
+                                        setValue(currentValue === value ? "ROLE_USER" : currentValue as UserRolesType);
                                         setEditRole(currentValue);
                                         setOpen(false)
                                     }}

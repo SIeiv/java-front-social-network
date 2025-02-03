@@ -2,7 +2,7 @@ import styles from "@/pages/auth/auth.module.css";
 import {Label} from "@/components/ui/label.tsx";
 import AuthInput from "@/pages/auth/auth-input.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {NavLink, useNavigate} from "react-router";
+import {NavLink} from "react-router";
 import {useEffect, useState} from "react";
 import {useDispatch} from "react-redux";
 import {loginUser} from "@/store/auth/actionCreators.ts";
@@ -11,7 +11,6 @@ import Loading from "@/components/ui/loading.tsx";
 
 const Login = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

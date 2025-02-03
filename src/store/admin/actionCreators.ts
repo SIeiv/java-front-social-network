@@ -2,11 +2,14 @@ import {Dispatch} from "@reduxjs/toolkit";
 import api from "@/api";
 import {local_addUser, local_deleteUser, local_editUser, local_fillUser, setUsers} from "@/store/admin/admin.slice.ts";
 import {IEditUserRequest, IFillUserRequest} from "@/api/admin/types.ts";
+import {setAdminUsersLoading} from "@/store/loading.slice.ts";
 
 export const admin_getUsersAC = () => async (dispatch: Dispatch) => {
     try {
+        dispatch(setAdminUsersLoading(true));
         const response = await api.admin.getUsers();
         dispatch(setUsers(response.data));
+        dispatch(setAdminUsersLoading(false));
     } catch (error: any) {
         console.error(error);
     }

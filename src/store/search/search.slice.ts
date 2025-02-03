@@ -1,6 +1,5 @@
-import {createSlice, Dispatch, PayloadAction} from "@reduxjs/toolkit";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {IShortUser} from "@/types.ts";
-import {ISearchRequest} from "@/api/profile/types.ts";
 
 
 

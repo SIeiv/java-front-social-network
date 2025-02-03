@@ -1,7 +1,7 @@
-import {createSlice, Dispatch, PayloadAction} from "@reduxjs/toolkit";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {IComment, IPost, IShortUser, IUserPage} from "@/types.ts";
-import {IFillProfileRequest, ISubscribeRequest} from "@/api/profile/types.ts";
-import {ICreatePostCommentRequest, IDeletePostRequest, IEditPostRequest} from "@/api/posts/types.ts";
+import {IFillProfileRequest} from "@/api/profile/types.ts";
+import {IDeletePostRequest, IEditPostRequest} from "@/api/posts/types.ts";
 
 
 const initialState = {
@@ -169,9 +169,9 @@ export const authSlice = createSlice({
             state.myPageData.image = action.payload.img;
             state.myThumbnail = action.payload.img;
 
-            state.myPageData.userPosts.forEach((post: IPost, index) => {
+            state.myPageData.userPosts.forEach((post: IPost) => {
                 post.authorImage = action.payload.img;
-                post.comments.forEach((comment, index) => {
+                post.comments.forEach((comment) => {
                     if (comment.authorId === action.payload.userId) {
                         comment.image = action.payload.img;
                     }

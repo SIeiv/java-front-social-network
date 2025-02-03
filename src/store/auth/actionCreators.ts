@@ -12,7 +12,6 @@ import {
 import api from "../../api";
 import {store} from "@/store";
 import {setUserDetails} from "@/store/auth/new_auth.slice.ts";
-import {resetAll} from "@/store/commonAC.ts";
 
 export const getDetailsAC = () => async (dispatch: Dispatch) => {
     try {
@@ -59,7 +58,6 @@ export const loginUser =
 export const appInitializeAC =
     () => async (dispatch: Dispatch) => {
         try {
-            console.log("appInitializeAC");
             dispatch(appInitializeStart());
 
             const response = await api.auth.getDetails();

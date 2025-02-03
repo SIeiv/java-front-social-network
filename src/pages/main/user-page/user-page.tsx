@@ -26,6 +26,9 @@ import FormPost from "@/pages/main/user-page/form-post.tsx";
 import FormAvatar from "@/pages/main/user-page/form-avatar.tsx";
 import {IDetailsResponse} from "@/api/auth/types.ts";
 import FormFillUser from "@/pages/main/form-fill-user.tsx";
+import {Skeleton} from "@/components/ui/skeleton.tsx";
+import loadingCircles from "@/assets/bouncing-circles.svg";
+import ShortUserSkeleton from "@/new_components/shortUserSkeleton.tsx";
 
 interface IUserPageProps {
     type: "my" | "another"
@@ -43,6 +46,11 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
     const {pathname} = useLocation();
 
     const itemsCount = 4;
+
+    const isPageLoading = useAppSelector(state => state.loading.profile.pageLoading);
+    const isSubscribersLoading = useAppSelector(state => state.loading.profile.subscribersLoading);
+    const isFriendsLoading = useAppSelector(state => state.loading.profile.friendsLoading);
+    const isSubscriptionsLoading = useAppSelector(state => state.loading.profile.subscriptionsLoading);
 
     const myThumbnail = useAppSelector(state => state.profile.myThumbnail);
     const details: IDetailsResponse = useAppSelector(state => state.auth.appInitializeData.initialUserData);
@@ -121,6 +129,11 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
         <ShortUserItem data={subscription}/>
     );
 
+    const loadingShortUsers: ReactElement[] = [];
+    for (let i = 0; i < itemsCount; i++) {
+        loadingShortUsers.push(<ShortUserSkeleton/>);
+    }
+
     const formData = () => {
         const currentUser: IShortUser = {
             shortName: details.shortname,
@@ -172,18 +185,32 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                             <div className={"flex flex-col gap-3 mt-3"}>
                                 <div className={"flex gap-1 items-center"}>
                                     <AtSign/>
-                                    <Label>{myPageData.shortName}</Label>
+                                    {
+                                        isPageLoading
+                                            ? <Skeleton className={"w-32 h-6"}/>
+                                            : <Label>{myPageData.shortName}</Label>
+                                    }
+
                                 </div>
                                 {myPageData.dateOfBirth
                                     && <div className={"flex gap-1 items-center"}>
                                         <Gift/>
-                                        <Label>{"День рождения: " + formedDateOfBirth}</Label>
+                                        {
+                                            isPageLoading
+                                                ? <Skeleton className={"w-32 h-6"}/>
+                                                : <Label>{"День рождения: " + formedDateOfBirth}</Label>
+                                        }
+
                                     </div>
                                 }
                                 {myPageData.gender
                                     && <div className={"flex gap-1 items-center"}>
                                         <Ghost/>
-                                        <Label>{"Пол: " + (myPageData.gender === "male" ? "Мужской" : "Женский")}</Label>
+                                        {
+                                            isPageLoading
+                                                ? <Skeleton className={"w-32 h-6"}/>
+                                                : <Label>{"Пол: " + (myPageData.gender === "male" ? "Мужской" : "Женский")}</Label>
+                                        }
                                     </div>
                                 }
                             </div>
@@ -220,8 +247,10 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                                 && myPageData.firstName[0] + myPageData.lastName[0]}</AvatarFallback>
                         </Avatar>
                         <div className={"flex flex-col justify-center items-start h-full gap-2"}>
-                            <Label className={"text-base"}>{myPageData.firstName + " " + myPageData.lastName}</Label>
-                            {/*<Label>{"@" + myPageData.shortName}</Label>*/}
+                            {isPageLoading
+                                ? <Skeleton className={"w-32 h-6"}/>
+                                : <Label className={"text-base"}>{myPageData.firstName + " " + myPageData.lastName}</Label>
+                            }
                             <Label onClick={() => {
                                 setProfileDetailsState(true)
                             }} className={"hover:underline cursor-pointer flex items-center justify-center gap-1"}>
@@ -262,39 +291,59 @@ const UserPage: FC<IUserPageProps> = ({type}) => {
                         </div>}
                         <div
                             className={"flex flex-col justify-center rounded-lg bg-white items-start p-3 gap-6 box-border"}>
-                            {posts}
+                            {isPageLoading 
+                                ? <img src={loadingCircles} alt="" className={"w-16 h-16 m-auto"}/>
+                                : posts}
                         </div>
                     </div>
 
                     <div className={"sticky top-[96px] h-[520px] flex flex-col gap-3"}>
                         <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
                             <div className={"flex flex-col gap-3"}>
-                                <ShortNameLink
-                                    content={"Подписчики " + (subscribers.length > Number(myPageData.subscribersCount)
-                                        ? subscribers.length : myPageData.subscribersCount)} to={
-                                    type === "my" ? "/my-friends/subscribers" : `/friends/subscribers/${myPageData.shortName}`
-                                }/>
+                                {isSubscribersLoading || isPageLoading
+                                    ? <Skeleton className={"w-32 h-[20px]"}/>
+                                    : <ShortNameLink
+                                        content={"Подписчики " + (subscribers.length > Number(myPageData.subscribersCount)
+                                            ? subscribers.length : myPageData.subscribersCount)} to={
+                                        type === "my" ? "/my-friends/subscribers" : `/friends/subscribers/${myPageData.shortName}`
+                                    }/>
+                                }
+
                                 <div className={"flex justify-start items-start gap-1"}>
-                                    {subscribers}
+                                    {(isSubscribersLoading || isPageLoading)
+                                        ? loadingShortUsers
+                                        : subscribers}
                                 </div>
                             </div>
                             <div className={"flex flex-col gap-3"}>
-                                <ShortNameLink content={"Друзья " + (friends.length > Number(myPageData.friendsCount)
-                                    ? friends.length : myPageData.friendsCount)} to={
-                                    type === "my" ? "/my-friends/friends" : `/friends/friends/${myPageData.shortName}`
-                                }/>
+                                {isFriendsLoading || isPageLoading
+                                    ? <Skeleton className={"w-32 h-[20px]"}/>
+                                    : <ShortNameLink content={"Друзья " + (friends.length > Number(myPageData.friendsCount)
+                                        ? friends.length : myPageData.friendsCount)} to={
+                                        type === "my" ? "/my-friends/friends" : `/friends/friends/${myPageData.shortName}`
+                                    }/>
+                                }
+
                                 <div className={"flex justify-start items-start gap-1"}>
-                                    {friends}
+                                    {(isFriendsLoading || isPageLoading)
+                                        ? loadingShortUsers
+                                        : friends}
                                 </div>
                             </div>
                         </div>
                         <div className={"w-[420px] rounded-lg bg-white box-border flex flex-col gap-3 p-3"}>
-                            <ShortNameLink content={"Подписки " + (subscriptions.length > Number(myPageData.subscriptionsCount)
-                                ? subscriptions.length : myPageData.subscriptionsCount)} to={
-                                type === "my" ? "/my-friends/subscriptions" : `/friends/subscriptions/${myPageData.shortName}`
-                            }/>
+                            {isSubscriptionsLoading || isPageLoading
+                                ? <Skeleton className={"w-32 h-[20px]"}/>
+                                : <ShortNameLink content={"Подписки " + (subscriptions.length > Number(myPageData.subscriptionsCount)
+                                    ? subscriptions.length : myPageData.subscriptionsCount)} to={
+                                    type === "my" ? "/my-friends/subscriptions" : `/friends/subscriptions/${myPageData.shortName}`
+                                }/>
+                            }
+
                             <div className={"flex justify-start items-start gap-1"}>
-                                {subscriptions}
+                                {(isSubscriptionsLoading || isPageLoading)
+                                    ? loadingShortUsers
+                                    : subscriptions}
                             </div>
                         </div>
                     </div>
