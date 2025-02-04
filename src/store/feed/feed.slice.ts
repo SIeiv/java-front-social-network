@@ -56,6 +56,18 @@ export const feedSlice = createSlice({
             state.recommended = {...action.payload};
         },
 
+        appendRecommended: (state, action: PayloadAction<IRecommended>) => {
+            action.payload.posts.forEach(post => {
+                post.authorImage = `data:image/png;base64,${post.authorImage}`;
+                post.image = `data:image/png;base64,${post.image}`;
+                post.comments.forEach((comment) => {
+                    comment.image = `data:image/png;base64,${comment.image}`
+                })
+            })
+
+            state.recommended.posts.push(...action.payload.posts);
+        },
+
         local_editPost_feed: (state, action: PayloadAction<IEditPostRequest>) => {
             state.feed.forEach((post: IPost) => {
                 if (post.id === action.payload.postId && post.profileId === action.payload.profileId) {
@@ -195,7 +207,8 @@ export const {
     resetFeed, setFeed, setRecommended, local_editRecommendationPostComment, local_editFeedPostComment,
     local_editPost_feed, local_editPost_recommended, local_deletePost_feed, local_deletePost_recommended,
     local_createFeedPostComment, local_createRecommendationPostComment, local_deleteRecommendationPostComment, local_deleteFeedPostComment,
-    local_unlikePost_feed, local_likePost_feed, local_likePost_recommended, local_unlikePost_recommended, appendFeed
+    local_unlikePost_feed, local_likePost_feed, local_likePost_recommended, local_unlikePost_recommended, appendFeed,
+    appendRecommended,
 } = feedSlice.actions;
 
 export default feedSlice.reducer;
