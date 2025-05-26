@@ -1,52 +1,76 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {IComment, IPost, IShortUser, IUserPage} from "@/types.ts";
-import {IFillProfileRequest} from "@/api/profile/types.ts";
-import {IDeletePostRequest, IEditPostRequest} from "@/api/posts/types.ts";
+import {IFullProfile} from "@/types/ProfileTypes.ts";
+import {formatAvatarPath, formatPostImagesPath} from "@/helpers.ts";
+import {ILinkedUsersResponse} from "@/api/profile/types.ts";
+import {IPost} from "@/types/PostTypes.ts";
+import {ICreatePostResponse} from "@/api/posts/types.ts";
 
 
 const initialState = {
-    myPageData: {
-        "profileId": null,
-        "subscribersCount": null,
-        "subscriptionsCount": null,
-        "friendsCount": null,
-        "firstName": null,
-        "lastName": null,
-        "shortName": null,
-        "image": null,
-        "userPosts": [],
-        "dateOfBirth": null,
-        "gender": null
-    } as IUserPage,
-    mySubscribers: [] as IShortUser[],
-    myFriends: [] as IShortUser[],
-    mySubscriptions: [] as IShortUser[],
-    myThumbnail: null as null | string,
+    myAvatarPath: null as null | string,
 
-    anotherPageData: {
-        "profileId": null,
-        "subscribersCount": null,
-        "subscriptionsCount": null,
-        "friendsCount": null,
-        "firstName": null,
-        "lastName": null,
-        "shortName": null,
-        "image": null,
-        "userPosts": [],
-        "dateOfBirth": null,
-        "gender": null
-    } as IUserPage,
-    anotherSubscribers: [] as IShortUser[],
-    anotherFriends: [] as IShortUser[],
-    anotherSubscriptions: [] as IShortUser[],
-
+    userPageData: {} as IFullProfile,
+    userPosts: null as IPost[] | null,
+    userSubscribers: [] as IFullProfile[],
+    userFriends: [] as IFullProfile[],
+    userSubscriptions: [] as IFullProfile[],
 }
 
 export const authSlice = createSlice({
     name: 'profile',
     initialState,
     reducers: {
-        setMyPageData: (state, action: PayloadAction<IUserPage>) => {
+        setUserPageData: (state, action: PayloadAction<IFullProfile>) => {
+            state.userPageData = {...action.payload, avatarPath: formatAvatarPath(action.payload.avatarPath)};
+        },
+
+        setMyAvatarPath: (state, action: PayloadAction<string>) => {
+            state.myAvatarPath = formatAvatarPath(action.payload);
+        },
+
+        setMyPosts: (state, action: PayloadAction<IPost[]>) => {
+            state.userPosts = formatPostImagesPath(action.payload);
+        },
+
+        setUserSubscribers: (state, action: PayloadAction<ILinkedUsersResponse>) => {
+            const subs = action.payload.map(sub => {
+                return {...sub, avatarPath: formatAvatarPath(sub.avatarPath)};
+            })
+            state.userSubscribers = subs;
+        },
+        setUserFriends: (state, action: PayloadAction<ILinkedUsersResponse>) => {
+            const friends = action.payload.map(friend => {
+                return {...friend, avatarPath: formatAvatarPath(friend.avatarPath)};
+            })
+            state.userFriends = friends;
+        },
+        setUserSubscriptions: (state, action: PayloadAction<ILinkedUsersResponse>) => {
+            const subscript = action.payload.map(s => {
+                return {...s, avatarPath: formatAvatarPath(s.avatarPath)};
+            })
+            state.userSubscriptions = subscript;
+        },
+
+        local_updateAvatar: (state, action: PayloadAction<{img: string, userId: number}>) => {
+            state.userPageData.avatarPath = action.payload.img;
+            state.myAvatarPath = action.payload.img;
+
+            state.userPosts && state.userPosts.forEach((post: IPost) => {
+                post.author.avatarPath = action.payload.img;
+                post.comments.forEach((comment) => {
+                    if (comment.authorId === action.payload.userId) {
+                        comment.image = action.payload.img;
+                    }
+                })
+            })
+        },
+
+        local_createPost: (state, action: PayloadAction<ICreatePostResponse>) => {
+            const post = formatPostImagesPath([action.payload])[0];
+            state.userPosts && (state.userPosts = [post, ...state.userPosts]);
+        },
+
+        /*setMyPageData: (state, action: PayloadAction<IUserPage>) => {
             action.payload.userPosts.forEach((post) => {
                 post.authorImage = `data:image/png;base64,${post.authorImage}`;
                 post.image = `data:image/png;base64,${post.image}`;
@@ -80,11 +104,7 @@ export const authSlice = createSlice({
             state.mySubscriptions = [...action.payload];
         },
 
-        setMyThumbnail: (state, action: PayloadAction<string>) => {
-            state.myThumbnail = `data:image/png;base64,${action.payload}`;
-        },
-
-        editProfile: (state, action: PayloadAction<IFillProfileRequest>) => {
+        editProfile: (state, action: PayloadAction<any>) => {
             state.myPageData.firstName = action.payload.firstName;
             state.myPageData.lastName = action.payload.lastName;
             state.myPageData.shortName = action.payload.shortName;
@@ -392,7 +412,7 @@ export const authSlice = createSlice({
                 }
             }
 
-        },
+        },*/
 
 
         resetProfile: () => initialState
@@ -401,21 +421,14 @@ export const authSlice = createSlice({
 
 export const {
     resetProfile,
-    setMyPageData,
-    setMySubscribers,
-    setMyFriends,
-    setMySubscriptions,
-    editProfile,
-    local_createPost,
-    setAnotherPageData,
-    setAnotherSubscriptions,
-    setAnotherSubscribers,
-    setAnotherFriends,
-    clearAnotherUser, local_unsubscribe,
-    local_createPostComment, local_deletePostComment,
-    setMyThumbnail, local_editPostComment,
-    local_deletePost, local_unlikePost_another, local_likePost_another,
-    local_updateAvatar, local_editPost, local_likePost, local_unlikePost, local_subscribe
+    setMyAvatarPath,
+    setMyPosts,
+    setUserFriends,
+    setUserSubscribers,
+    setUserSubscriptions,
+    setUserPageData,
+    local_updateAvatar,
+    local_createPost
 } = authSlice.actions;
 
 export default authSlice.reducer;

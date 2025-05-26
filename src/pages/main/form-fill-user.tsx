@@ -9,49 +9,53 @@ import {
 import AuthInput from "@/pages/auth/auth-input.tsx";
 import FillProfileGender from "@/pages/fill-profile/fill-profile-gender.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {FC, useState} from "react";
-import {fillProfile2AC} from "@/store/profile/actionCreators.ts";
+import {FC, useEffect, useState} from "react";
+//import {fillProfile2AC} from "@/store/profile/actionCreators.ts";
 import {useAppDispatch} from "@/hooks.ts";
-import {IUserPage} from "@/types.ts";
-import {admin_fillUserAC} from "@/store/admin/actionCreators.ts";
-import {IFillUserRequest} from "@/api/admin/types.ts";
-import {IDetailsResponse} from "@/api/auth/types.ts";
+import {IFullProfile} from "@/types/ProfileTypes.ts";
+import {updateUserPageAC} from "@/store/profile/actionCreators.ts";
+import {IUpdateProfileRequest} from "@/api/profile/types.ts";
 
 interface IFormFillUser {
     type: "user" | "admin";
     state: boolean;
     setState: (state: boolean) => void;
-    pageData?: IUserPage
-    user?: IDetailsResponse;
+    pageData: IFullProfile
+    user?: any;
 }
 
 const FormFillUser: FC<IFormFillUser> = ({type, state, setState, pageData, user}) => {
     const dispatch = useAppDispatch();
 
-    const [firstName, setFirstName] = useState(type === "user" ? pageData!.firstName! : (user ? user.firstname : ""));
-    const [lastName, setLastName] = useState(type === "user" ? pageData!.lastName! : (user ? user.lastname : ""));
-    const [shortName, setShortName] = useState(type === "user" ? pageData!.shortName! : (user ? user.shortname : ""));
-    const [birthDate, setBirthDate] = useState(type === "user" ? pageData!.dateOfBirth! : "");
-    const [gender, setGender] = useState(type === "user" ? (pageData!.gender! === "male" ? 0 : 1) : 0);
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [shortName, setShortName] = useState("");
+    const [birthDate, setBirthDate] = useState("");
+    const [gender, setGender] = useState(0);
 
-    //const [error, setError] = useState();
+    useEffect(() => {
+        setFirstName(type === "user" ? pageData!.firstName : (user ? user.firstname : ""));
+        setLastName(type === "user" ? pageData!.lastName : (user ? user.lastname : ""));
+        setShortName(type === "user" ? pageData!.shortName : (user ? user.shortname : ""));
+        setBirthDate((type === "user" && pageData.birthday) ? pageData!.birthday.split("T")[0] : "");
+        setGender(type === "user" ? (pageData!.gender! === "male" ? 0 : 1) : 0);
+    }, [pageData, user])
 
     const handleFillProfileSubmit = () => {
-        const data = {
-            firstName,
-            lastName,
-            shortName,
-            birthDate,
-            gender: gender ? "female" : "male",
-            avatar: ""
+        const data: IUpdateProfileRequest = {
+            FirstName: firstName,
+            LastName: lastName,
+            ShortName: shortName,
+            Birthday: new Date(birthDate).toISOString(),
+            Gender: gender ? "female" : "male",
         }
 
-        dispatch(fillProfile2AC(data));
+        dispatch(updateUserPageAC(data));
         setState(false);
     }
 
     const handleFillAdminSubmit = () => {
-        const data: IFillUserRequest = {
+        const data: any = {
             id: user?.profileId!,
             firstName,
             lastName,
@@ -60,7 +64,7 @@ const FormFillUser: FC<IFormFillUser> = ({type, state, setState, pageData, user}
             gender: gender ? "female" : "male",
         }
 
-        dispatch(admin_fillUserAC(data));
+        //dispatch(admin_fillUserAC(data));
         setState(false);
     }
 

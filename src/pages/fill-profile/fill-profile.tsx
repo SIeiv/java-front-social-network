@@ -11,12 +11,16 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
 import {useEffect, useState} from "react";
-import {fillProfileAC} from "@/store/profile/actionCreators.ts";
-import {IFillProfileRequest} from "@/api/profile/types.ts";
+import {ICreateProfileRequest} from "@/api/profile/types.ts";
+import {createProfileAC} from "@/store/profile/actionCreators.ts";
+import {useNavigate} from "react-router";
+//import {fillProfileAC} from "@/store/profile/actionCreators.ts";
+//import {IFillProfileRequest} from "@/api/profile/types.ts";
 
 
 const FillProfile = () => {
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -27,13 +31,12 @@ const FillProfile = () => {
     const [error, setError] = useState("");
 
     const handleSubmit = () => {
-        const data: IFillProfileRequest = {
+        const data: ICreateProfileRequest = {
             firstName,
             lastName,
             shortName,
-            birthDate,
+            birthday: new Date(birthDate),
             gender: gender ? "female" : "male",
-            avatar: ""
         }
 
         const dataReg = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/;
@@ -47,7 +50,9 @@ const FillProfile = () => {
         } else if (birthDate === "" || !dataReg.test(birthDate)) {
             setError("Дата рождения введена некорректно!")
         } else {
-            dispatch(fillProfileAC(data));
+            dispatch(createProfileAC(data));
+            navigate("/auth/login");
+
         }
     }
 

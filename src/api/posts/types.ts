@@ -1,20 +1,23 @@
+import {IPost} from "@/types/PostTypes.ts";
 
 export interface ICreatePostRequest {
-    "profileId": number | null,
     "content": string | null,
-    "image": string | null
+    "image": File | null
+}
+
+export type ICreatePostResponse = IPost;
+
+export interface IEditPostRequest extends ICreatePostRequest {
+    id: number;
+}
+
+export interface IEditPostResponse {
+    success: boolean;
+    post: IPost;
 }
 
 export interface IDeletePostRequest {
-    "profileId": number,
-    "postId": number
-}
-
-export interface IEditPostRequest {
-    "profileId": number,
-    "content": string,
-    "postId": number,
-    "image": string | null
+    postId: number;
 }
 
 export interface ICreatePostCommentRequest {
@@ -22,12 +25,10 @@ export interface ICreatePostCommentRequest {
     postId: number | null,
 }
 
-export interface IEditPostCommentRequest {
-    commentId: number | null,
-    content: string | null,
+export interface IGetFeedRequest {
+    pageSize: number,
+    pageNumber: number,
 }
 
-export interface IDeletePostCommentRequest {
-    commentId: number | null,
-}
+export type IGetFeedResponse = IPost[]
 

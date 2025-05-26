@@ -1,19 +1,38 @@
-import {IShortUser} from "@/types.ts";
+import {IFullProfile, IProfile} from "@/types/ProfileTypes.ts";
+import {IPost} from "@/types/PostTypes.ts";
 
+export interface ICreateProfileRequest extends IProfile {}
+export interface ICreateProfileResponse {
 
-export interface IFillProfileRequest {
-    "firstName": string,
-    "lastName": string,
-    "shortName": string,
-    "birthDate": string,
-    "gender": string,
-    "avatar": string//?
 }
 
-export interface IUpdateAvatarRequest {
-    picture: File
+export interface IUpdateProfileRequest extends IProfile {}
+export interface IUpdateProfileResponse {
+    success: boolean,
+    profile: IFullProfile,
 }
 
+export interface IUpdatePictureRequest {
+    avatar: File
+}
+export interface IUpdatePictureResponse {
+
+}
+
+export type IGetUserPostsResponse = IPost[];
+export type IGetUserProfileResponse = IFullProfile;
+
+export type ILinkedUsersResponse = IFullProfile[];
+
+export interface ISearchRequest {
+    details: string
+    pageNumber: number
+    pageSize: number
+}
+
+export type ISearchResponse = IFullProfile[];
+
+/*
 export interface ISubscribeRequest {
     profileId: number,
 }
@@ -24,4 +43,4 @@ export interface ISearchRequest {
 
 export type IGetUserSubscribersResponse = IShortUser[];
 export type IGetUserFriendsResponse = IShortUser[];
-export type IGetUserSubscriptionsResponse = IShortUser[];
+export type IGetUserSubscriptionsResponse = IShortUser[];*/

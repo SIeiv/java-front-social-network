@@ -1,7 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
 import AdminPanelItem from "@/pages/main/admin-panel-item.tsx";
 import {useEffect, useState} from "react";
-import {admin_getUsersAC} from "@/store/admin/actionCreators.ts";
+//import {admin_getUsersAC} from "@/store/admin/actionCreators.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {Plus} from "lucide-react";
 import AdminPanelEditForm from "@/pages/main/admin-panel-edit-form.tsx";
@@ -10,17 +10,17 @@ import loadingCircles from "@/assets/bouncing-circles.svg";
 const AdminPanel = () => {
     const dispatch = useAppDispatch();
 
-    const users = useAppSelector(state => state.admin.users);
+    const users = [0];/* = useAppSelector(state => state.admin.users);*/
 
     const userEls = users.map(user => <AdminPanelItem user={user}/>);
 
-    const isAdminPanelLoading = useAppSelector(state => state.loading.adminUsersLoading);
+    const isAdminPanelLoading = false // = useAppSelector(state => state.loading.adminUsersLoading);
 
 
     const [addUserState, setAddUserState] = useState(false);
 
     useEffect(() => {
-        dispatch(admin_getUsersAC());
+        //dispatch(admin_getUsersAC());
     }, []);
 
     return (

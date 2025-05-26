@@ -1,27 +1,24 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {IShortUser} from "@/types.ts";
-
-
+import {formatAvatarPath} from "@/helpers.ts";
+import {ICreateCommentResponse} from "@/api/comments/types.ts";
+import {IComment} from "@/types/CommentTypes.ts";
+import {IFullProfile} from "@/types/ProfileTypes.ts";
+import {ISearchResponse} from "@/api/profile/types.ts";
 
 const initialState = {
-    searchData: [] as IShortUser[],
-    field: ""
+    searchData: [] as IFullProfile[],
+    searchField: "" as string,
 }
 
 export const searchSlice = createSlice({
     name: 'search',
     initialState,
     reducers: {
-        setSearchData: (state, action: PayloadAction<IShortUser[]>) => {
-            action.payload.forEach((item) => {
-                item.thumbnail = `data:image/png;base64,${item.thumbnail}`
-            })
-
-            state.searchData = [...action.payload];
-        },
-
-        setField: (state, action: PayloadAction<string>) => {
-            state.field = action.payload;
+        setSearchData: (state, action: PayloadAction<ISearchResponse>) => {
+            const result = action.payload.map((item) => ({
+                ...item, avatarPath: formatAvatarPath(item.avatarPath),
+            }));
+            state.searchData = result;
         },
 
         resetSearch: () => initialState
@@ -29,7 +26,8 @@ export const searchSlice = createSlice({
 })
 
 export const {
-    setSearchData, resetSearch, setField
+    setSearchData,
+    resetSearch,
 } = searchSlice.actions;
 
 export default searchSlice.reducer;

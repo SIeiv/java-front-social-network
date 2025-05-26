@@ -1,9 +1,9 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {IDetailsResponse} from "@/api/auth/types.ts";
+import {IWrongResponse} from "@/api/types.ts";
+import {IMeUser} from "@/types/userTypes.ts";
 
 const initialState = {
     authData: {
-        accessToken: null as null | string,
         isLoading: false as boolean,
         error: null as null | string,
     },
@@ -18,7 +18,7 @@ const initialState = {
 
     appInitializeData: {
         initialized: false,
-        initialUserData: 1 as number | null | IDetailsResponse,
+        me: null as IMeUser | null,
         isLoading: true as boolean,
         error: null as null | string
     }
@@ -31,14 +31,13 @@ export const authSlice = createSlice({
         loginStart: (state) => {
             state.authData.isLoading = true;
         },
-        loginSuccess: (state, action: PayloadAction<string>) => {
-            state.authData.accessToken = action.payload;
+        loginSuccess: (state) => {
             state.authData.isLoading = false;
             state.authData.error = null;
         },
-        loginFail: (state, action: PayloadAction<string>) => {
+        loginFail: (state, action: PayloadAction<IWrongResponse>) => {
             state.authData.isLoading = false;
-            state.authData.error = action.payload;
+            state.authData.error = action.payload.message;
         },
 
         logoutStart: (state) => {
@@ -60,9 +59,9 @@ export const authSlice = createSlice({
             state.regData.isLoading = false;
             state.regData.error = null;
         },
-        regFail: (state, action: PayloadAction<string>) => {
+        regFail: (state, action: PayloadAction<IWrongResponse>) => {
             state.regData.isLoading = false;
-            state.regData.error = action.payload;
+            state.regData.error = action.payload.message;
         },
 
         setRegisterError: (state, action: PayloadAction<string>) => {
@@ -72,15 +71,15 @@ export const authSlice = createSlice({
         appInitializeStart: (state) => {
             state.appInitializeData.isLoading = true
         },
-        appInitializeSuccess: (state, action: PayloadAction<IDetailsResponse>) => {
+        appInitializeSuccess: (state, action: PayloadAction<IMeUser>) => {
             state.appInitializeData.initialized = true;
-            state.appInitializeData.initialUserData = {...action.payload};
+            state.appInitializeData.me = {...action.payload};
             state.appInitializeData.isLoading = false;
         },
-        appInitializeFail: (state, action: PayloadAction<string>) => {
+        appInitializeFail: (state, action: PayloadAction<IWrongResponse>) => {
             state.appInitializeData.isLoading = false;
-            state.appInitializeData.initialUserData = null;
-            state.appInitializeData.error = action.payload;
+            state.appInitializeData.me = null;
+            state.appInitializeData.error = action.payload.message;
         },
 
         resetAuth: () => initialState

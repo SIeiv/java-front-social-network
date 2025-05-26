@@ -10,10 +10,10 @@ import {Textarea} from "@/components/ui/textarea.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {FC, useRef, useState} from "react";
 import {ICreatePostRequest, IEditPostRequest} from "@/api/posts/types.ts";
-import {IPost} from "@/types.ts";
-import {createPostAC, editPostAC} from "@/store/profile/actionCreators.ts";
+import {createPostAC, editPostAC} from "@/store/posts/actionCreators.ts";
 import {useAppDispatch} from "@/hooks.ts";
 import {Input} from "@/components/ui/input.tsx";
+import {IPost} from "@/types/PostTypes.ts";
 
 interface IFormPost {
     state: boolean;
@@ -24,25 +24,25 @@ interface IFormPost {
     prevPostContent?: string | null;
     postId?: number | null;
     place: string;
+
+    setLocalPostData: (state: IPost) => void;
+    localPostData: IPost
 }
 
-const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail, type, prevPostContent, postId, place}) => {
+const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail, type, prevPostContent, postId, place, localPostData, setLocalPostData}) => {
     const dispatch = useAppDispatch();
 
-    console.log("FormPost: ", place)
-
-    const [postContent, setPostContent] = useState(prevPostContent ? prevPostContent : "");
+    const [postContent, setPostContent] = useState(type == "edit" ? prevPostContent : "");
     const imageInputRef = useRef<HTMLInputElement>(null);
     const [imageBase64, setImageBase64] = useState("");
 
     const handleCreatePostSubmit = () => {
         const data: ICreatePostRequest = {
-            image: imageBase64.replace("data:image/jpeg;base64,", ""),
-            profileId: profileId,
+            image: imageInputRef.current!.files![0],
             content: postContent
         }
 
-        const data2: IPost = {
+        /*const data2: IPost = {
             "id": 0,
             "profileId": profileId,
             "publicationDate": new Date().toISOString(),
@@ -56,23 +56,22 @@ const FormPost: FC<IFormPost> = ({setState, state, profileId, thumbnail, type, p
             firstName: "",
             lastName: "",
             shortName: ""
-        }
+        }*/
 
-        dispatch(createPostAC(data, data2));
+        dispatch(createPostAC(data, Number(profileId)));
         setState(false);
         setImageBase64("");
         setPostContent("");
     }
 
-    const handleEditPostSubmit = () => {
+    const handleEditPostSubmit = async () => {
         const data: IEditPostRequest = {
-            image: imageBase64 === "" ? null : imageBase64,
-            profileId: profileId!,
+            image: imageInputRef.current!.files![0],
+            id: postId!,
             content: postContent,
-            postId: postId!
         }
-
-        dispatch(editPostAC(data, place));
+        debugger;
+        dispatch(editPostAC(data, localPostData.authorId))
         setState(false);
     }
 

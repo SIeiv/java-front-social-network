@@ -1,9 +1,9 @@
 import {Button} from "@/components/ui/button.tsx";
 import {FC, ReactElement, useEffect, useState} from "react";
-import {IPost, IRecommended, IShortUser} from "@/types.ts";
+import {IRecommended, IShortUser} from "@/types.ts";
 import PostItem from "@/new_components/postItem.tsx";
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
-import {appendFeedAC, appendRecommendedAC, getFeedAC, getRecommendedAC} from "@/store/feed/actionCreators.ts";
+//import {appendFeedAC, appendRecommendedAC, getFeedAC, getRecommendedAC} from "@/store/feed/actionCreators.ts";
 import {NavLink, useLocation} from "react-router";
 import {Label} from "@/components/ui/label.tsx";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel.tsx";
@@ -11,6 +11,8 @@ import ShortUserItem from "@/new_components/shortUserItem.tsx";
 import loadingCircles from "@/assets/bouncing-circles.svg";
 import ShortUserSkeleton from "@/new_components/shortUserSkeleton.tsx";
 import {setFeedAppendLoading} from "@/store/loading.slice.ts";
+import {IPost} from "@/types/PostTypes.ts";
+import {appendFeedAC, appendRecommendedAC, getFeedAC, getRecommendedAC} from "@/store/posts/actionCreators.ts";
 
 interface IFeedProps {
     type: "main" | "recommended";
@@ -24,28 +26,22 @@ const Feed: FC<IFeedProps> = ({type}) => {
     const isFeedAppendLoading = useAppSelector(state => state.loading.feedAppendLoading);
 
     let feed: IPost[] = [];
-    let recommendedFeed: IRecommended = {
-        posts: [],
-        profiles: []
-    };
+    let recommendedFeed: IPost[] = []
     let recommendedUsers: IShortUser[] = [];
     let recommendedUsersEls: ReactElement[][] = [];
 
     if (type === "main") {
-        feed = useAppSelector(state => state.feed.feed);
-        recommendedFeed = {
-            posts: [],
-            profiles: []
-        };
+        feed = useAppSelector(state => state.posts.feed);
+        recommendedFeed = []
     } else if (type === "recommended") {
         feed = [];
-        recommendedFeed = useAppSelector(state => state.feed.recommended);
+        recommendedFeed = useAppSelector(state => state.posts.recommended);
     }
 
-    recommendedUsers = useAppSelector(state => state.feed.recommended.profiles);
+    recommendedUsers = []//useAppSelector(state => state.feed.recommended.profiles);
 
-    const pageSize = 2;
-    const [currentPage, setCurrentPage] = useState(0);
+    const pageSize = 5;
+    const [currentPage, setCurrentPage] = useState(1);
 
     const scrollHandler = (e) => {
         if (e.target.documentElement.scrollHeight - (e.target.documentElement.scrollTop + window.innerHeight) < 100 && !isLoading) {
@@ -59,9 +55,9 @@ const Feed: FC<IFeedProps> = ({type}) => {
         if (isFeedAppendLoading) {
             setCurrentPage(currentPage + 1);
             if (type === "main") {
-                dispatch(appendFeedAC(pageSize, currentPage));
+                dispatch(appendFeedAC({pageSize, pageNumber: currentPage}));
             } else {
-                dispatch(appendRecommendedAC(pageSize, currentPage));
+                dispatch(appendRecommendedAC({pageSize, pageNumber: currentPage}));
             }
         }
     }, [isFeedAppendLoading]);
@@ -74,13 +70,12 @@ const Feed: FC<IFeedProps> = ({type}) => {
     }, []);
 
     useEffect(() => {
-        setCurrentPage(0);
-        debugger;
+        setCurrentPage(1);
         if (type === "main" && !feed.length) {
-            dispatch(getFeedAC(pageSize, currentPage));
+            dispatch(getFeedAC({pageSize, pageNumber: currentPage}));
 
-        } else if (type === "recommended" && !recommendedFeed.posts.length) {
-            dispatch(getRecommendedAC(pageSize, currentPage));
+        } else if (type === "recommended" && !recommendedFeed.length) {
+            dispatch(getRecommendedAC({pageSize, pageNumber: currentPage}));
         }
         setCurrentPage(currentPage + 1);
     }, [pathname]);
@@ -94,7 +89,7 @@ const Feed: FC<IFeedProps> = ({type}) => {
         if (isLoading) {
             arr.push(<ShortUserSkeleton/>);
         } else {
-            arr.push(<ShortUserItem data={recommendedUsers[i]}/>);
+            //arr.push(<ShortUserItem data={recommendedUsers[i]}/>);
         }
 
         if (arr.length === carouselSize) {
@@ -104,18 +99,16 @@ const Feed: FC<IFeedProps> = ({type}) => {
     }
 
     const feedPosts: ReactElement[] = feed.map((post: IPost) =>
-        <PostItem type={"another"} place={"feed"} firstName={post.firstName} lastName={post.lastName}
-                  shortName={post.shortName} postData={post}/>
+        <PostItem type={"another"} place={"feed"} postData={post}/>
     );
 
-    const recommendedFeedPosts: ReactElement[] = recommendedFeed.posts.map((post: IPost) =>
-        <PostItem type={"another"} place={"recommended"} firstName={post.firstName} lastName={post.lastName}
-                  shortName={post.shortName} postData={post}/>
+    const recommendedFeedPosts: ReactElement[] = recommendedFeed.map((post: IPost) =>
+        <PostItem type={"another"} place={"recommended"} postData={post}/>
     );
 
     return (
         <div className={"flex gap-3"}>
-            <div className={"w-[600px] box-border flex flex-col gap-3"}>
+            <div className={"w-[600px] box-border flex flex-col gap-3"}>{/*
                 {
                     type === "recommended" &&
                     <div className={"w-[600px] box-border flex flex-col gap-3 rounded-lg bg-white items-start p-3"}>
@@ -131,7 +124,7 @@ const Feed: FC<IFeedProps> = ({type}) => {
                         </div>
                         {recommendedUsersEls}
                     </div>
-                }
+                }*/}
                 <div
                     className={"flex flex-col justify-center rounded-lg bg-white items-start p-3 gap-6 box-border"}>
                     {isLoading

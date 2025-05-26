@@ -2,19 +2,13 @@ import {NavLink, useLocation} from "react-router";
 import {Button} from "@/components/ui/button.tsx";
 import {FC, ReactElement, useEffect} from "react";
 import {Label} from "@/components/ui/label.tsx";
-import {
-    getAnotherFriendsAC,
-    getAnotherSubscribersAC, getAnotherSubscriptionsAC,
-    getMyFriendsAC,
-    getMySubscribersAC,
-    getMySubscriptionsAC
-} from "@/store/profile/actionCreators.ts";
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
-import {IShortUser} from "@/types.ts";
 import FriendItem from "@/new_components/friendItem.tsx";
 import ShortNameLink from "@/new_components/shortNameLink.tsx";
 import loadingCircles from "@/assets/bouncing-circles.svg";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
+import {IFullProfile} from "@/types/ProfileTypes.ts";
+import {getUserPageAC} from "@/store/profile/actionCreators.ts";
 
 interface IFriendsProps {
     type: "my" | "another";
@@ -27,29 +21,21 @@ const Friends: FC<IFriendsProps> = ({type, category}) => {
 
     const pathnameEnd = pathname.split("/").pop();
 
-    const user = useAppSelector(state => state.auth.appInitializeData.initialUserData)
+    const me = useAppSelector(state => state.auth.appInitializeData.me)
 
     const isSubscribersLoading = useAppSelector(state => state.loading.profile.subscribersLoading);
     const isFriendsLoading = useAppSelector(state => state.loading.profile.friendsLoading);
     const isSubscriptionsLoading = useAppSelector(state => state.loading.profile.subscriptionsLoading);
 
-    let content: IShortUser[] = []
+    let content: IFullProfile[] = []
+    let profile: IFullProfile = useAppSelector(state => state.profile.userPageData);
 
-    if (type === "my") {
-        if (category === "friends")
-            content = useAppSelector(state => state.profile.myFriends);
-        else if (category === "subscribers")
-            content = useAppSelector(state => state.profile.mySubscribers);
-        else if (category === "subscriptions")
-            content = useAppSelector(state => state.profile.mySubscriptions);
-    } else if (type === "another") {
-        if (category === "friends")
-            content = useAppSelector(state => state.profile.anotherFriends);
-        else if (category === "subscribers")
-            content = useAppSelector(state => state.profile.anotherSubscribers);
-        else if (category === "subscriptions")
-            content = useAppSelector(state => state.profile.anotherSubscriptions);
-    }
+    if (category === "friends")
+        content = useAppSelector(state => state.profile.userFriends);
+    else if (category === "subscribers")
+        content = useAppSelector(state => state.profile.userSubscribers);
+    else if (category === "subscriptions")
+        content = useAppSelector(state => state.profile.userSubscriptions);
 
     const titleController = () => {
         if (category === "friends") {
@@ -70,13 +56,9 @@ const Friends: FC<IFriendsProps> = ({type, category}) => {
 
     useEffect(() => {
         if (type === "my") {
-            if (category === "friends") user && typeof user !== "number" && dispatch(getMyFriendsAC(user.shortname));
-            else if (category === "subscribers") user && typeof user !== "number" && dispatch(getMySubscribersAC(user.shortname));
-            else if (category === "subscriptions") user && typeof user !== "number" && dispatch(getMySubscriptionsAC(user.shortname));
+            dispatch(getUserPageAC(Number(me.profileId)));
         } else if (type === "another") {
-            if (category === "friends") pathnameEnd && dispatch(getAnotherFriendsAC(pathnameEnd));
-            else if (category === "subscribers") pathnameEnd && dispatch(getAnotherSubscribersAC(pathnameEnd));
-            else if (category === "subscriptions") pathnameEnd && dispatch(getAnotherSubscriptionsAC(pathnameEnd));
+            dispatch(getUserPageAC(Number(pathnameEnd)));
         }
 
     }, [type, category, pathname]);
@@ -96,7 +78,8 @@ const Friends: FC<IFriendsProps> = ({type, category}) => {
                             ? <Skeleton className={"w-32 h-5"}/>
                             : <div className={"flex gap-1"}>
                                 <Label>{titleController() + " " + (content.length) + " "}</Label>
-                                {type === "another" && <ShortNameLink content={`(@${pathnameEnd})`} to={`/user/${pathnameEnd}`}/>}
+                                {type === "another" &&
+                                    <ShortNameLink content={`(@${profile.firstName} ${profile.lastName})`} to={`/user/${profile.id}`}/>}
                             </div>
                         }
 

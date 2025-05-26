@@ -7,7 +7,7 @@ import AdminPanelEditForm from "@/pages/main/admin-panel-edit-form.tsx";
 import {NavLink} from "react-router";
 import FormFillUser from "@/pages/main/form-fill-user.tsx";
 import {useAppDispatch} from "@/hooks.ts";
-import {admin_deleteUserAC} from "@/store/admin/actionCreators.ts";
+//import {admin_deleteUserAC} from "@/store/admin/actionCreators.ts";
 
 interface IAdminPanelItem {
     user: IDetailsResponse

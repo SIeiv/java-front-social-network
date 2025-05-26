@@ -8,30 +8,27 @@ import RouterFriends from "@/pages/main/router-friends.tsx";
 import {useAppSelector} from "@/hooks.ts";
 import Search from "@/pages/main/search.tsx";
 import AdminPanel from "@/pages/main/admin-panel.tsx";
-import {IDetailsResponse} from "@/api/auth/types.ts";
 
 
 const Main = () => {
     const navigate = useNavigate();
 
-    const profile: IDetailsResponse = useAppSelector(state => state.auth.appInitializeData.initialUserData);
+    const me: any = useAppSelector(state => state.auth.appInitializeData.me);
     const initializeState = useAppSelector(state => state.auth.appInitializeData.isLoading);
+    const isLoginLoading = useAppSelector(state => state.auth.authData.isLoading);
 
     /*const appIsInit = useAppSelector(state => state.auth.appInitializeData.initialized);*/
 
     useEffect(() => {
-        console.log("Обновление мейна!")
-        console.log("initial state", initializeState);
-        console.log("profile", profile);
 
-        if (!profile && !initializeState) {
+        /*if (!me && !initializeState && !isLoginLoading) {
             navigate("/auth/login");
-        }
+        }*/
 
-        if ((profile && !profile.verified) && !initializeState) {
+        if ((me.profileId === "") && !initializeState) {
             navigate("/fill-profile");
         }
-    }, [profile, initializeState]);
+    }, [me, initializeState]);
 
     return (
         <div className={"bg-slate-50"}>
@@ -44,11 +41,13 @@ const Main = () => {
                         <Route path="/my-page" element={<UserPage type={"my"}/>}/>
                         <Route path="/user/*" element={<UserPage type={"another"}/>}/>
                         <Route path="/friends/*" element={<RouterFriends/>}/>
-                        <Route path="/feed/main" element={<Feed type={"main"}/>}/>
-                        <Route path="/feed/recommended" element={<Feed type={"recommended"}/>}/>
                         <Route path="/my-friends/*" element={<RouterFriends/>}/>
+                        <Route path="/feed/main" element={<Feed type={"main"}/>}/>
                         <Route path="/search/*" element={<Search/>}/>
-                        <Route path="/admin-panel" element={<AdminPanel/>}/>
+                        <Route path="/feed/recommended" element={<Feed type={"recommended"}/>}/>
+                        {/*
+
+                        <Route path="/admin-panel" element={<AdminPanel/>}/>*/}
                     </Routes>
                 </div>
             </div>

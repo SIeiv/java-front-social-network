@@ -1,5 +1,4 @@
 import {FC, ReactElement, useEffect, useState} from "react";
-import {IComment, IPost} from "@/types.ts";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Button} from "@/components/ui/button.tsx";
@@ -9,31 +8,41 @@ import {Input} from "@/components/ui/input.tsx";
 import ShortNameLink from "@/new_components/shortNameLink.tsx";
 import DateLabel from "@/new_components/DateLabel.tsx";
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
-import {createPostCommentAC, deletePostAC, likePostAC, unlikePostAC} from "@/store/profile/actionCreators.ts";
+//import {createPostCommentAC, deletePostAC, likePostAC, unlikePostAC} from "@/store/profile/actionCreators.ts";
 import {ICreatePostCommentRequest} from "@/api/posts/types.ts";
-import {IDetailsResponse} from "@/api/auth/types.ts";
 import FormPost from "@/pages/main/user-page/form-post.tsx";
 
 import filledHeart from "../assets/heart.svg";
+import {IMeUser} from "@/types/userTypes.ts";
+import {IFullProfile} from "@/types/ProfileTypes.ts";
+import {UserRoles} from "@/types/userRoles.ts";
+import {IPost} from "@/types/PostTypes.ts";
+import {IComment} from "@/types/CommentTypes.ts";
+import {deletePostAC, likePostAC, unlikePostAC} from "@/store/posts/actionCreators.ts";
+import {createCommentAC} from "@/store/comments/actionCreators.ts";
 
 interface IPostItem {
     postData: IPost
-    firstName: string | null
-    lastName: string | null
-    shortName: string | null
     type?: "my" | "another"
     place: string
 }
 
-const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type, place}) => {
+const PostItem: FC<IPostItem> = ({postData, type, place}) => {
     const dispatch = useAppDispatch();
 
-    const currentUser: IDetailsResponse = useAppSelector(state => state.auth.appInitializeData.initialUserData)
-    const myThumbnail = useAppSelector(state => state.profile.myThumbnail);
+    const profile: IFullProfile = useAppSelector(state => state.profile.userPageData);
+    const me: IMeUser = useAppSelector(state => state.auth.appInitializeData.me);
+    const avatarPath = useAppSelector(state => state.profile.myAvatarPath);
 
-    const comments: ReactElement[] = postData.comments.map((comment: IComment) =>
-        <CommentItem key={comment.id} commentData={comment} postId={postData.id} place={place}/>
-    )
+    const [localPostData, setLocalPostData] = useState(postData);
+
+    useEffect(() => {
+        setLocalPostData(postData);
+    }, [postData]);
+
+    const comments: ReactElement[] = Array.isArray(localPostData.comments) ? localPostData.comments!.map((comment: IComment) =>
+        <CommentItem key={comment.id} commentData={comment} postId={localPostData.id} place={place}/>
+    ) : []
 
     const [isMinimized, setIsMinimized] = useState(true);
 
@@ -42,131 +51,142 @@ const PostItem: FC<IPostItem> = ({postData, firstName, lastName, shortName, type
     const [editPostState, setEditPostState] = useState(false);
 
     const [isLiked, setIsLiked] = useState(false);
+    const [isDeleted, setIsDeleted] = useState(false);
 
-    const handleCommentCreate = () => {
-        const data1: IComment = {
-            id: 0,
-            username: currentUser.shortname,
-            content: commentContent,
-            image: myThumbnail ? myThumbnail : "",
-            authorId: currentUser.profileId,
-            creationDate: new Date().toISOString(),
-            firstName: currentUser.firstname,
-            lastName: currentUser.lastname,
-        }
+    const postBuffer = useAppSelector(state => state.posts.postBuffer);
+    const commentBuffer = useAppSelector(state => state.comments.commentBuffer);
 
-        const data2: ICreatePostCommentRequest = {
-            postId: postData.id,
-            content: commentContent
-        }
-
-        dispatch(createPostCommentAC(data1, data2, place));
+    const handleCreateComment = () => {
+        dispatch(createCommentAC({postId: localPostData.id, content: commentContent}));
         setCommentContent("");
     }
+    useEffect(() => {
+        if (commentBuffer && commentBuffer.postId === localPostData.id)
+            setLocalPostData({...localPostData, comments: [...localPostData.comments, commentBuffer]});
+    }, [commentBuffer]);
 
     const handleDeletePost = () => {
-        dispatch(deletePostAC(postData, place));
+        dispatch(deletePostAC({postId: localPostData.id}));
+        setIsDeleted(true);
     }
 
     useEffect(() => {
-        for (let i = 0; i < postData.likes.length; i++) {
-            if (postData.likes[i] === currentUser.profileId) setIsLiked(true);
+        for (let i = 0; i < localPostData.likes.length; i++) {
+            if (localPostData.likes[i] === Number(me.profileId)) setIsLiked(true);
         }
     }, []);
+
+    useEffect(() => {
+        try {
+            if (postBuffer && (postBuffer.id === localPostData.id)) {
+                setLocalPostData(postBuffer);
+            }
+        } catch (e) {}
+    }, [postBuffer]);
 
     return (
         <div className={"w-full"}>
             <FormPost state={editPostState} setState={setEditPostState} type={"edit"} postId={postData.id}
-                      profileId={postData.profileId} thumbnail={myThumbnail} prevPostContent={postData.content}
-                      place={place}
+                      profileId={Number(localPostData.userId)} thumbnail={avatarPath} prevPostContent={postData.content}
+                      place={place} localPostData={localPostData} setLocalPostData={setLocalPostData}
             />
 
-            <div className={"w-full flex flex-col gap-2"}>
-                <div className={"flex justify-between"}>
-                    <div className={"flex items-center gap-2"}>
-                        <Avatar className={""}>
-                            <AvatarImage src={postData.authorImage!}/>
-                            <AvatarFallback>{(firstName && lastName)
-                                && firstName[0] + lastName[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className={"flex flex-col gap-1"}>
-                            <Label>{firstName + " " + lastName}</Label>
-                            <ShortNameLink content={"@" + shortName} to={`/user/${shortName}`}/>
+            {isDeleted
+                ? <div>Удалено</div>
+                : <div className={"w-full flex flex-col gap-2"}>
+                    <div className={"flex justify-between"}>
+                        <div className={"flex items-center gap-2"}>
+                            <Avatar className={""}>
+                                <AvatarImage src={localPostData.author.avatarPath!}/>
+                                <AvatarFallback>{(localPostData.author.firstName && localPostData.author.lastName)
+                                    && localPostData.author.firstName[0] + localPostData.author.lastName[0]}</AvatarFallback>
+                            </Avatar>
+                            <div className={"flex flex-col gap-1"}>
+                                <Label>{localPostData.author.firstName + " " + localPostData.author.lastName}</Label>
+                                <ShortNameLink content={"@" + localPostData.author.shortName}
+                                               to={`/user/${localPostData.author.id}`}/>
+                            </div>
+
                         </div>
-
-                    </div>
-                    {(type === "my" || currentUser.role === "ROLE_MODERATOR" || currentUser.role === "ROLE_ADMIN")
-                        && <div>
-                            <Button variant={"ghost"} className={"p-1 [&_svg]:size-5"} onClick={() => {setEditPostState(true)}}>
-                                <Pencil/>
-                            </Button>
-                            <Button variant={"ghost"} className={"p-1 [&_svg]:size-5"} onClick={handleDeletePost}>
-                                <Trash2 className={"text-red-600"}/>
-                            </Button>
-                        </div>
-                    }
-
-                </div>
-
-                {postData.image && <img className={"rounded-lg"} src={postData.image} alt=""/>}
-
-                <Label>
-                    {postData?.content}
-                </Label>
-
-                <div className={"flex justify-between items-center"}>
-                    <div className={"flex gap-2"}>
-                        {isLiked
-                            ? <Button variant={"ghost"} className={"[&_svg]:size-5 p-1"} onClick={() => {
-                                setIsLiked(false);
-                                dispatch(unlikePostAC(postData.id ? postData.id : 0, place))
-                            }}>
-                                <img className={"w-5"} src={filledHeart} alt=""/>
-                                <Label className={"cursor-pointer"}>{postData.likesCount}</Label>
-                            </Button>
-                            : <Button variant={"ghost"} className={"[&_svg]:size-5 p-1"} onClick={() => {
-                                setIsLiked(true);
-                                dispatch(likePostAC(postData.id ? postData.id : 0, place))
-                            }}>
-                                <Heart/>
-                                <Label className={"cursor-pointer"}>{postData.likesCount}</Label>
-                            </Button>
+                        {(type === "my" || me.role === UserRoles.Moderator || me.role === UserRoles.Admin)
+                            && <div>
+                                <Button variant={"ghost"} className={"p-1 [&_svg]:size-5"} onClick={() => {
+                                    setEditPostState(true)
+                                }}>
+                                    <Pencil/>
+                                </Button>
+                                <Button variant={"ghost"} className={"p-1 [&_svg]:size-5"} onClick={handleDeletePost}>
+                                    <Trash2 className={"text-red-600"}/>
+                                </Button>
+                            </div>
                         }
 
-                        <Button variant={"ghost"} className={"[&_svg]:size-5 p-1"}>
-                            <MessageCircle/>
-                            <Label className={"cursor-pointer align"}>{postData.commentsCount}</Label>
-                        </Button>
                     </div>
-                    {postData.publicationDate && <DateLabel date={postData.publicationDate}/>}
+
+                    {localPostData.imagePath && <img className={"rounded-lg"} src={localPostData.imagePath} alt=""/>}
+
+                    <Label>
+                        {localPostData?.content}
+                    </Label>
+
+                    <div className={"flex justify-between items-center"}>
+                        <div className={"flex gap-2"}>
+                            {isLiked
+                                ? <Button variant={"ghost"} className={"[&_svg]:size-5 p-1"} onClick={() => {
+                                    setIsLiked(false);
+                                    dispatch(unlikePostAC(postData.id ? postData.id : 0))
+                                    setLocalPostData({...localPostData, likesCount: localPostData.likesCount - 1})
+                                }}>
+                                    <img className={"w-5"} src={filledHeart} alt=""/>
+                                    <Label className={"cursor-pointer"}>{localPostData.likesCount}</Label>
+                                </Button>
+                                : <Button variant={"ghost"} className={"[&_svg]:size-5 p-1"} onClick={() => {
+                                    setIsLiked(true);
+                                    dispatch(likePostAC(postData.id ? postData.id : 0))
+                                    setLocalPostData({...localPostData, likesCount: localPostData.likesCount + 1})
+                                }}>
+                                    <Heart/>
+                                    <Label className={"cursor-pointer"}>{localPostData.likesCount}</Label>
+                                </Button>
+                            }
+
+                            <Button variant={"ghost"} className={"[&_svg]:size-5 p-1"}>
+                                <MessageCircle/>
+                                <Label className={"cursor-pointer align"}>{localPostData.comments.length}</Label>
+                            </Button>
+                        </div>
+                        {localPostData.publicationDate && <DateLabel date={localPostData.publicationDate.toString()}/>}
+                    </div>
+
+                    {/*Комменты*/}
+                    <div className={"flex flex-col items-start gap-5"}>
+                        <div className={"flex flex-col items-start gap-3 ml-3"}>
+                            {isMinimized
+                                ? comments[0]
+                                : comments
+                            }
+                        </div>
+                        {(comments.length > 1 && isMinimized)
+                            && <Label className={"hover:underline cursor-pointer ml-3"}
+                                      onClick={() => {
+                                          setIsMinimized(false)
+                                      }}>Показать следующие комментарии</Label>}
+
+                        <div className={"flex gap-2 w-full"}>
+                            <Input placeholder={"Написать комментарий..."} value={commentContent}
+                                   onChange={(e) => {
+                                       setCommentContent(e.target.value)
+                                   }}/>
+                            <Button onClick={handleCreateComment} className={"h-full"} variant={"ghost"}>
+                                <SendHorizontal/>
+                            </Button>
+                        </div>
+                    </div>
+
                 </div>
+            }
 
-                {/*Комменты*/}
-                <div className={"flex flex-col items-start gap-5"}>
-                    <div className={"flex flex-col items-start gap-3 ml-3"}>
-                        {isMinimized
-                            ? comments[0]
-                            : comments
-                        }
-                    </div>
-                    {(comments.length > 1 && isMinimized)
-                        && <Label className={"hover:underline cursor-pointer ml-3"}
-                                  onClick={() => {
-                                      setIsMinimized(false)
-                                  }}>Показать следующие комментарии</Label>}
 
-                    <div className={"flex gap-2 w-full"}>
-                        <Input placeholder={"Написать комментарий..."} value={commentContent}
-                               onChange={(e) => {
-                                   setCommentContent(e.target.value)
-                               }}/>
-                        <Button onClick={handleCommentCreate} className={"h-full"} variant={"ghost"}>
-                            <SendHorizontal/>
-                        </Button>
-                    </div>
-                </div>
-
-            </div>
         </div>
 
     );

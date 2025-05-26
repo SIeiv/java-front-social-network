@@ -1,24 +1,48 @@
-import {UserRolesType} from "@/types.ts";
+import {IMeUser, IMinimalUser} from "@/types/userTypes.ts";
 
 export interface ILoginRequest {
-    "email": string,
+    "username": string,
     "password": string,
 }
 
-export interface IRegisterRequest {
-    "email": string,
-    "password": string,
-    "username": string,
+export interface ILoginResponse {
+    success: boolean,
+    accessToken: string,
+    refreshToken: string,
+    expiresAt: Date,
+    user: IMinimalUser
 }
 
-export interface IDetailsResponse {
-    "id": number,
-    "username": string,
-    "shortname": string,
-    "firstname": string,
-    "lastname": string,
-    role: UserRolesType,
-    "email": string,
-    "profileId": number,
-    verified: boolean,
+export interface ILogoutRequest {
+    refreshToken: string,
+}
+
+export interface ILogoutResponse {
+    success: boolean,
+    message: string
+}
+
+export interface IRegisterRequest extends ILoginRequest {}
+
+// чето тут надо перелогиниваться вроде когда зареган
+// чушь какая то
+export interface IRegisterResponse extends ILoginResponse {
+    message: string,
+
+}
+
+export interface IMeResponse {
+    success: boolean,
+    user: IMeUser
+}
+
+export interface IRefreshTokenRequest {
+    refreshToken: string,
+}
+
+export interface IRefreshTokenResponse {
+    success: boolean,
+    accessToken: string,
+    refreshToken: string,
+    expiresAt: Date,
 }

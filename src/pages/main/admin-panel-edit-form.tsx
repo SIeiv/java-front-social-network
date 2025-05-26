@@ -11,24 +11,24 @@ import AuthInput from "@/pages/auth/auth-input.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {ComboboxDemo} from "@/components/ui/combobox-demo.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {IEditUserRequest} from "@/api/admin/types.ts";
-import {admin_addUserAC, admin_editUserAC} from "@/store/admin/actionCreators.ts";
+//import {IEditUserRequest} from "@/api/admin/types.ts";
+//import {admin_addUserAC, admin_editUserAC} from "@/store/admin/actionCreators.ts";
 import {UserRolesType} from "@/types.ts";
-import {IDetailsResponse} from "@/api/auth/types.ts";
+//import {IDetailsResponse} from "@/api/auth/types.ts";
 import {useAppDispatch} from "@/hooks.ts";
 
 interface Props {
     state: boolean;
     setState: (state: boolean) => void;
     type: "add" | "edit";
-    user?: IDetailsResponse
+    user?: any
 }
 
 const AdminPanelEditForm: FC<Props> = ({state, setState, type, user}) => {
     const dispatch = useAppDispatch();
 
     const formData = () => {
-        const data: IEditUserRequest = {
+        const data: any = {
             username,
             password,
             email,
@@ -39,16 +39,16 @@ const AdminPanelEditForm: FC<Props> = ({state, setState, type, user}) => {
     }
 
     const handleEditUserSubmit = () => {
-        const data: IEditUserRequest = formData();
+        const data: any = formData();
 
-        dispatch(admin_editUserAC(data, user!.id));
+        //dispatch(admin_editUserAC(data, user!.id));
         setState(false);
     }
 
     const handleAddUserSubmit = () => {
-        const data: IEditUserRequest = formData();
+        const data: any = formData();
 
-        dispatch(admin_addUserAC(data));
+        //dispatch(admin_addUserAC(data));
         setState(false);
 
         setEmail("");

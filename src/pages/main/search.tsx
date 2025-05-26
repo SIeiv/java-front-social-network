@@ -2,10 +2,11 @@ import {Label} from "@/components/ui/label.tsx";
 import {useLocation, useNavigate} from "react-router";
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
 import {useEffect, useState} from "react";
-import {searchAC} from "@/store/search/actionCreators.ts";
 import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import FriendItem from "@/new_components/friendItem.tsx";
+import {searchAC} from "@/store/search/actionCreators.ts";
+import {resetSearch} from "@/store/search/search.slice.ts";
 
 const Search = () => {
     const {pathname} = useLocation();
@@ -14,17 +15,18 @@ const Search = () => {
 
     const dispatch = useAppDispatch();
     const searchData = useAppSelector((state) => state.search.searchData);
-    const searchField = useAppSelector((state) => state.search.field);
+    const searchField = useAppSelector((state) => state.search.searchField);
 
-    const [searchInput, setSearchInput] = useState<string>(searchField);
+    const [searchInput, setSearchInput] = useState<string>("");
 
     useEffect(() => {
         if (searchRequest) {
-            dispatch(searchAC({search: searchInput}));
+            dispatch(searchAC({details: searchInput, pageNumber: 1, pageSize: 99}));
         }
+        dispatch(resetSearch());
     }, []);
 
-    const searchEls = searchData.map((item) => <FriendItem friendData={item}/>)
+    const searchEls = searchData ? searchData.map((item) => <FriendItem friendData={item}/>) : []
 
     return (
         <div className={"flex gap-3"}>
@@ -36,7 +38,7 @@ const Search = () => {
                             <Input placeholder={"Введите запрос"} value={searchInput}
                                    onChange={(e) => {setSearchInput(e.target.value)}}></Input>
                             <Button onClick={() => {
-                                dispatch(searchAC({search: searchInput}))
+                                dispatch(searchAC({details: searchInput, pageNumber: 1, pageSize: 99}))
                                 navigate(`/search/${searchInput}`);
                             }}>Поиск</Button>
                         </div>

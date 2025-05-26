@@ -11,7 +11,7 @@ import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {useAppDispatch, useAppSelector} from "@/hooks.ts";
 import {updateAvatarAC} from "@/store/profile/actionCreators.ts";
-import {IDetailsResponse} from "@/api/auth/types.ts";
+import {IMeUser} from "@/types/userTypes.ts";
 
 interface IFormAvatar {
     state: boolean;
@@ -24,10 +24,10 @@ const FormAvatar: FC<IFormAvatar> = ({setState, state}) => {
     const imageInputRef = useRef<HTMLInputElement>(null);
     const [imageBase64, setImageBase64] = useState("");
 
-    const user: IDetailsResponse = useAppSelector(state => state.auth.appInitializeData.initialUserData)
+    const me: IMeUser = useAppSelector(state => state.auth.appInitializeData.me)
 
     const handleCreatePostSubmit = () => {
-        dispatch(updateAvatarAC(imageInputRef.current!.files!, imageBase64, user.profileId));
+        dispatch(updateAvatarAC(imageInputRef.current!.files!, imageBase64, me.id));
         setState(false);
         setImageBase64("");
     }

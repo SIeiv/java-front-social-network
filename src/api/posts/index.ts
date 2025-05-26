@@ -2,52 +2,40 @@ import { axiosInstance } from "@/api/instance.ts";
 import {AxiosPromise} from "axios";
 import endpoints, {BASE_URL} from "@/api/endpoints.ts";
 import {
-    ICreatePostCommentRequest,
-    ICreatePostRequest, IDeletePostCommentRequest,
-    IDeletePostRequest, IEditPostCommentRequest,
-    IEditPostRequest
+    ICreatePostRequest, ICreatePostResponse,
+    IDeletePostRequest,
+    IEditPostRequest, IEditPostResponse, IGetFeedRequest, IGetFeedResponse
 } from "@/api/posts/types.ts";
 
-export const createPost = (params: ICreatePostRequest): AxiosPromise<number> =>
+export const createPost = (params: ICreatePostRequest): AxiosPromise<ICreatePostResponse> =>
     axiosInstance.post(endpoints.POSTS.CREATE_POST, params, {
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "multipart/form-data"
         }
     });
 
-export const editPost = (params: IEditPostRequest): AxiosPromise<string> =>
-    axiosInstance.put(endpoints.POSTS.EDIT_POST, params, {
+export const editPost = (params: IEditPostRequest): AxiosPromise<IEditPostResponse> =>
+    axiosInstance.put(endpoints.POSTS.EDIT_POST(params.id), params, {
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "multipart/form-data"
         }
     });
 
 export const likePost = (postId: number): AxiosPromise<string> =>
-    axiosInstance.post(BASE_URL + `/posts/like/${postId}`, null, {
-        headers: {
-            "Content-Type": "application/json"
-        }
-    });
+    axiosInstance.post(endpoints.POSTS.LIKE_POST(postId));
 
 export const unlikePost = (postId: number): AxiosPromise<string> =>
-    axiosInstance.delete(BASE_URL + `/posts/like/${postId}`);
+    axiosInstance.delete(endpoints.POSTS.UNLIKE_POST(postId));
 
 export const deletePost = (params: IDeletePostRequest): AxiosPromise<string> =>
-    axiosInstance.delete(endpoints.POSTS.DELETE_POST, {data: params});
+    axiosInstance.delete(endpoints.POSTS.DELETE_POST(params.postId));
 
-export const createPostComment = (params: ICreatePostCommentRequest): AxiosPromise<number> =>
-    axiosInstance.post(endpoints.POSTS.CREATE_POST_COMMENT, params, {
-        headers: {
-            "Content-Type": "application/json"
-        }
-    });
+export const getFeed = (params: IGetFeedRequest): AxiosPromise<IGetFeedResponse> =>
+    axiosInstance.get(endpoints.POSTS.GET_FEED, {
+        params
+    })
 
-export const editPostComment = (params: IEditPostCommentRequest): AxiosPromise<string> =>
-    axiosInstance.put(endpoints.POSTS.EDIT_POST_COMMENT, params, {
-        headers: {
-            "Content-Type": "application/json"
-        }
-    });
-
-export const deletePostComment = (params: IDeletePostCommentRequest): AxiosPromise<string> =>
-    axiosInstance.delete(endpoints.POSTS.DELETE_POST_COMMENT, {data: params});
+export const getRecommended = (params: IGetFeedRequest): AxiosPromise<IGetFeedResponse> =>
+    axiosInstance.get(endpoints.POSTS.GET_RECOMMENDED, {
+        params
+    })

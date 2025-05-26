@@ -1,7 +1,144 @@
+import api from "@/api";
+import {
+    local_updateAvatar,
+    setMyAvatarPath,
+    setMyPosts, setUserFriends,
+    setUserPageData, setUserSubscribers, setUserSubscriptions,
+} from "@/store/profile/profile.slice.ts";
+import {Dispatch} from "@reduxjs/toolkit";
+import {setFriendsLoading, setPageLoading, setSubscriptionsLoading } from "../loading.slice";
+import {setSubscribersLoading} from "@/store/loading.slice.ts";
+import {ICreateProfileRequest, ISearchRequest, IUpdateProfileRequest} from "@/api/profile/types.ts";
+import {toast} from "sonner";
+import {AppDispatch} from "@/store";
+import {logoutAC} from "@/store/auth/actionCreators.ts";
+
+export const getMyAvatarPathAC = (id: number) => async (dispatch: Dispatch) => {
+    try {
+        const response = await api.profile.getUserProfilePicture(id);
+        dispatch(setMyAvatarPath(response.data));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getUserPostsAC = (profileId: number) => async (dispatch: Dispatch) => {
+    try {
+        const postsResponse = await api.profile.getUserPosts(profileId);
+        dispatch(setMyPosts(postsResponse.data));
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+export const getUserPageAC = (profileId: number) => async (dispatch: AppDispatch) => {
+    try {
+        dispatch(setPageLoading(true));
+        dispatch(setSubscribersLoading(true));
+        dispatch(setFriendsLoading(true));
+        dispatch(setSubscriptionsLoading(true));
+        const response = await api.profile.getUserProfile(profileId);
+        dispatch(getUserPostsAC(profileId))
+        dispatch(setUserPageData(response.data));
+        dispatch(setPageLoading(false));
+
+        dispatch(getUserSubscribersAC(profileId));
+        dispatch(getUserFriendsAC(profileId));
+        dispatch(getUserSubscriptionsAC(profileId));
+    } catch (error: any) {
+        toast(`Ошибка: ${error.message}`);
+        console.error(error);
+    }
+}
+
+export const updateUserPageAC = (data: IUpdateProfileRequest) => async (dispatch: Dispatch) => {
+    try {
+        const response = await api.profile.updateProfile(data);
+        dispatch(setUserPageData(response.data.profile));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getUserSubscribersAC = (id: number) => async (dispatch: Dispatch) => {
+    try {
+        dispatch(setSubscribersLoading(true));
+        const response = await api.profile.getUserProfileSubscribers(id);
+        dispatch(setUserSubscribers(response.data));
+        dispatch(setSubscribersLoading(false));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getUserFriendsAC = (id: number) => async (dispatch: Dispatch) => {
+    try {
+        dispatch(setFriendsLoading(true));
+        const response = await api.profile.getUserProfileFriends(id);
+        dispatch(setUserFriends(response.data));
+        dispatch(setFriendsLoading(false));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const getUserSubscriptionsAC = (id: number) => async (dispatch: Dispatch) => {
+    try {
+        dispatch(setSubscriptionsLoading(true));
+        const response = await api.profile.getUserProfileSubscriptions(id);
+        dispatch(setUserSubscriptions(response.data));
+        dispatch(setSubscriptionsLoading(false));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const updateAvatarAC = (data: FileList, img: string, userId: number) => async (dispatch: Dispatch) => {
+    try {
+        dispatch(local_updateAvatar({img, userId}))
+        await api.profile.updatePicture({avatar: data[0]});
+
+
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const subscribeAC = (userId: number) => async (dispatch: AppDispatch) => {
+    try {
+        await api.profile.subscribe(userId);
+        dispatch(getUserSubscribersAC(userId));
+        dispatch(getUserFriendsAC(userId));
+        dispatch(getUserSubscriptionsAC(userId));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const unsubscribeAC = (userId: number) => async (dispatch: AppDispatch) => {
+    try {
+        await api.profile.unsubscribe(userId);
+        dispatch(getUserSubscribersAC(userId));
+        dispatch(getUserFriendsAC(userId));
+        dispatch(getUserSubscriptionsAC(userId));
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+export const createProfileAC = (data: ICreateProfileRequest) => async (dispatch: AppDispatch) => {
+    try {
+        await api.profile.createProfile({...data, birthday: data.birthday.toISOString()});
+        dispatch(logoutAC());
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+
+/*
 import {Dispatch} from "@reduxjs/toolkit";
 import api from "@/api";
 
-import {IFillProfileRequest} from "@/api/profile/types.ts";
 import {setUserVerified} from "@/store/auth/new_auth.slice.ts";
 
 import {
@@ -371,4 +508,4 @@ export const unsubscribeAC = (currentUser: IShortUser, anotherUser: IShortUser) 
     } catch (error: any) {
         console.error(error);
     }
-}
+}*/
